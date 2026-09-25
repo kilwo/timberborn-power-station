@@ -210,11 +210,46 @@ properties (see `ShantySpeaker/FinishableBuildingSoundPlayerSpec`) makes it avai
 
 ---
 
-## 7. Open design questions (for later phases)
+## 7. Design decisions and open questions
 
-1. **Rope blocks along the path.** Ziplines reserve every voxel along the cable, so nothing can be built
-   through it later. Should ropes do the same (more realistic, stops invalid ropes) or only check clearance
-   when linking? This changes gameplay feel, so it's the user's call.
-2. **District check.** Ziplines require both towers to be in the same district. That's irrelevant for
-   power, so the proposal is to skip it.
-3. **Inclination limit.** Zipline max is 50°. Ropes probably want the same or a looser limit.
+**Decided (2026-09-25):** ropes copy zipline rules for clearance and blocks along the rope, the same-district
+check, and the inclination limit (50°).
+
+### Rope blocks along the path
+
+- The vanilla block is `Models/ZiplineCable/ZiplineConnectionBlock.blueprint`: `BlockObjectSpec` 1×1×1,
+  `MatterBelow: Any`, `Occupations: "Bottom, Top, Corners, Path, Middle"`, plus `CableBlockSpec`. It's
+  created with `BlockObjectFactory.CreateAsPreview(spec, parent, new Placement(cell))` followed by
+  `blockObject.MarkAsFinishedAndAddToServices()` (both public, `Timberborn.BlockSystem`).
+- **We can't reuse the vanilla block entity.** `ZiplineConnectionService.Disconnect` deletes a cell's block
+  whenever *its own* connection list has nothing left at that cell, so it would delete blocks a rope still
+  needs, and the reverse would happen too. We need our own `RopeBlock` blueprint: the same `BlockObjectSpec`
+  with our own marker spec instead of `CableBlockSpec`.
+- Consequence: ropes can share cells with other ropes, but vanilla zipline validation only accepts
+  `CableBlock` cells, so **a zipline can't cross a rope**. Whether a rope may cross a zipline is open
+  (question B).
+
+### District: open question A
+
+- For ziplines, `ZiplineConnectionService.DistrictCentersAreCompatible` uses
+  `PathDistrictRetriever.GetAnyDistrictCenter()` (public, `Timberborn.BuildingsNavigation`). That reads
+  the district road at the tower's `PathSpec.MainPathCoordinates`, because zipline towers are path buildings.
+- **If either end has no district, the check passes.** It only fails when both ends have a district and
+  the districts differ.
+- Power buildings have no path (`PathSpec`) and no `BuildingAccessible`, so they get neither
+  `PathDistrictRetriever` nor `DistrictBuilding` (`Timberborn.GameDistricts`; decorated only onto
+  `BuildingAccessible`). **A power station has no district by default.**
+- **Decided rule (lenient, adjacent road):** a station's district is the first `DistrictCenter` in
+  `DistrictCenterRegistry.AllDistrictCenters` (public) for which `IsOnPreviewDistrictRoad(pos)` or
+  `IsOnInstantDistrictRoad(pos)` (public, `Timberborn.GameDistricts.DistrictCenter`) is true. `pos` is
+  `CoordinateSystem.GridToWorld(cell)` for each of the 4 cells horizontally adjacent to the station base.
+  This mirrors `PathDistrictRetriever.GetAnyDistrictCenter`. Linking fails only if both ends have a
+  district and they differ. No district is allowed, the same as the zipline rule.
+- Implementation risk: several adjacent roads could belong to different districts. Take the first match,
+  as the zipline code effectively does.
+
+### Crossings (decided)
+
+- **No crossings between ropes and ziplines.** They block each other like any other obstacle. Ropes may
+  share cells with other ropes: a cell holding our `RopeBlock` counts as clear for a new rope. No patching
+  is needed.

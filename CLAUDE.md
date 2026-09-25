@@ -72,8 +72,11 @@ Keep a running notes file at `docs/game-api-notes.md`. For each relevant game cl
   - The target is a different station.
   - The two stations aren't already linked.
   - Both stations are under the max-ropes limit.
-  - The span is within the maximum (configurable; start near vanilla zipline range).
-  - The rope's straight line between anchors is clear of terrain and buildings. Reuse zipline clearance logic if accessible.
+  - The span is within the maximum (configurable; start at the vanilla zipline range of 30).
+  - **Steepness:** the same inclination rule and limit as ziplines (`MaxCableInclination`, 50° in 1.1.2.4, computed as in `ZiplineConnectionService.InclinationIsValid`).
+  - **Same district (lenient, as for ziplines):** a station's district is the district road on any tile horizontally adjacent to its base. Linking fails only when both ends have a district and they differ. A station with no adjacent district road can link to anything.
+  - **Clearance and blocks along the rope (same as ziplines):** take the Bresenham voxel line between the anchors, excluding each station's own cells. Every cell must pass `BlockValidator.BlocksValid` for a 1×1×1 rope block or already hold a rope block. On connect, place an invisible rope block entity in each cell so nothing can be built through the rope. On disconnect, remove the blocks no other rope still uses.
+  - **Our own `RopeBlock` blueprint, not the vanilla zipline block.** Ropes can share cells with other ropes, but ropes and ziplines can't cross each other.
 - Triggers a power-graph rebuild after every change.
 
 ### Power graph hook (Harmony)
