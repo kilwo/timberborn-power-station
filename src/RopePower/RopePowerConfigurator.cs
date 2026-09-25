@@ -14,6 +14,7 @@ namespace RopePower
             Bind<PowerTransferStation>().AsTransient();
             Bind<PowerTransferStationRegistry>().AsSingleton();
             Bind<RopeConnectionService>().AsSingleton();
+            Bind<RopePowerConnector>().AsSingleton();
             MultiBind<IDevModule>().To<RopeLinkDevModule>().AsSingleton();
             MultiBind<TemplateModule>().ToProvider(ProvideTemplateModule).AsSingleton();
         }

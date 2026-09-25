@@ -15,6 +15,9 @@
     <Reference Include="$(TimberbornManaged)Bindito.*.dll" Private="false" />
     <Reference Include="$(TimberbornManaged)UnityEngine*.dll" Private="false" />
     <Reference Include="$(TimberbornManaged)System.Collections.Immutable.dll" Private="false" />
+    <!-- Provided at runtime by the Workshop "Harmony" mod (manifest RequiredMods). Never deploy a copy:
+         the game Assembly.Load()s every DLL in every mod folder. -->
+    <Reference Include="$(HarmonyDir)\0Harmony.dll" Private="false" />
   </ItemGroup>
 
   <!-- Deploy the manifest, data and DLL to the game's Mods folder. -->

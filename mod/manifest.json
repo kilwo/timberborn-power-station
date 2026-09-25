@@ -4,6 +4,10 @@
   "Id": "Elum.RopePower",
   "MinimumGameVersion": "1.1.2.4",
   "Description": "Power Transfer Stations linked by rope loops carry mechanical power across long distances without power shafts.",
-  "RequiredMods": [],
+  "RequiredMods": [
+    {
+      "Id": "Harmony"
+    }
+  ],
   "OptionalMods": []
 }

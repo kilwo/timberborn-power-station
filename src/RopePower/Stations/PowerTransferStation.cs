@@ -4,6 +4,7 @@ using Timberborn.BaseComponentSystem;
 using Timberborn.BlockSystem;
 using Timberborn.Coordinates;
 using Timberborn.EntitySystem;
+using Timberborn.MechanicalSystem;
 using Timberborn.Persistence;
 using Timberborn.WorldPersistence;
 using UnityEngine;
@@ -32,7 +33,11 @@ namespace RopePower.Stations
 
         private PowerTransferStationSpec _spec;
         private BlockObject _blockObject;
+        private MechanicalNode _mechanicalNode;
         private readonly List<PowerTransferStation> _ropePartners = new List<PowerTransferStation>();
+        // Which rope-slot transput (index among the slot transputs) each link uses on this end. Not persisted:
+        // slots are reassigned when links are restored, before the mechanical node joins a graph.
+        private readonly Dictionary<PowerTransferStation, int> _slotByPartner = new Dictionary<PowerTransferStation, int>();
         private List<PowerTransferStation> _loadedRopePartners;
 
         public PowerTransferStation(RopeConnectionService ropeConnectionService,
@@ -58,10 +63,20 @@ namespace RopePower.Stations
 
         public string DebugName => $"station {Coordinates}";
 
+        /// <summary>Number of rope-slot transputs in the blueprint; hard cap on ropes for this station.</summary>
+        public int RopeSlotCapacity { get; private set; }
+
+        /// <summary>Set while DeleteEntity runs so the power refresh leaves this station alone.</summary>
+        public bool IsBeingDeleted { get; private set; }
+
+        public MechanicalGraph PowerGraph => _mechanicalNode.Graph;
+
         public void Awake()
         {
             _spec = GetComponent<PowerTransferStationSpec>();
             _blockObject = GetComponent<BlockObject>();
+            _mechanicalNode = GetComponent<MechanicalNode>();
+            RopeSlotCapacity = CountRopeSlotSpecs();
         }
 
         public void InitializeEntity()
@@ -84,6 +99,7 @@ namespace RopePower.Stations
 
         public void DeleteEntity()
         {
+            IsBeingDeleted = true;
             _ropeConnectionService.UnlinkAll(this);
             _registry.Remove(this);
         }
@@ -135,11 +151,130 @@ namespace RopePower.Stations
         internal void AddPartner(PowerTransferStation other)
         {
             _ropePartners.Add(other);
+            _slotByPartner[other] = LowestFreeSlot();
         }
 
         internal void RemovePartner(PowerTransferStation other)
         {
             _ropePartners.Remove(other);
+            _slotByPartner.Remove(other);
+        }
+
+        /// <summary>
+        /// Called from the TransputMap.GetFacingTransput patch. If <paramref name="transput"/> is one of this station's
+        /// rope slots and the slot is in use, returns the partner's paired rope-slot transput; otherwise null.
+        /// </summary>
+        public Transput GetRopePartnerTransput(Transput transput)
+        {
+            int slot = GetRopeSlotIndex(transput);
+            if (slot < 0)
+            {
+                return null;
+            }
+            foreach (KeyValuePair<PowerTransferStation, int> entry in _slotByPartner)
+            {
+                if (entry.Value == slot)
+                {
+                    PowerTransferStation partner = entry.Key;
+                    return partner._slotByPartner.TryGetValue(this, out int partnerSlot)
+                        ? partner.GetRopeSlotTransput(partnerSlot)
+                        : null;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Rebuilds this station's mechanical connections so rope changes take effect: detach + reattach runs the game's own
+        /// MechanicalGraphManager.RemoveNode/AddNode (same public path the vanilla Clutch uses).
+        /// </summary>
+        public void RefreshPowerConnections()
+        {
+            if (IsBeingDeleted || !_mechanicalNode.Enabled || _mechanicalNode.IsDetached)
+            {
+                // Not in a graph yet (unfinished / loading): the node picks up its ropes when it joins a graph.
+                return;
+            }
+            _mechanicalNode.SetDetached(true);
+            _mechanicalNode.SetDetached(false);
+        }
+
+        /// <summary>True if the rope to <paramref name="other"/> is an actual transput connection right now.</summary>
+        public bool IsRopeConnectedTo(PowerTransferStation other)
+        {
+            if (!_slotByPartner.TryGetValue(other, out int slot))
+            {
+                return false;
+            }
+            Transput transput = GetRopeSlotTransput(slot);
+            return transput != null && transput.ConnectedNode == other._mechanicalNode;
+        }
+
+        private Transput GetRopeSlotTransput(int slot)
+        {
+            int index = 0;
+            foreach (Transput transput in RopeSlotTransputs())
+            {
+                if (index++ == slot)
+                {
+                    return transput;
+                }
+            }
+            return null;
+        }
+
+        private int GetRopeSlotIndex(Transput transput)
+        {
+            int index = 0;
+            foreach (Transput slotTransput in RopeSlotTransputs())
+            {
+                if (slotTransput == transput)
+                {
+                    return index;
+                }
+                index++;
+            }
+            return -1;
+        }
+
+        private IEnumerable<Transput> RopeSlotTransputs()
+        {
+            // Transputs are created when the building enters the unfinished or finished state.
+            if (_mechanicalNode.Transputs.IsDefault)
+            {
+                yield break;
+            }
+            foreach (Transput transput in _mechanicalNode.Transputs)
+            {
+                if (transput.BaseDirection == Direction3D.Bottom && transput.Offset == _spec.RopeSlotCoordinates)
+                {
+                    yield return transput;
+                }
+            }
+        }
+
+        private int CountRopeSlotSpecs()
+        {
+            int count = 0;
+            foreach (TransputSpec transputSpec in GetComponent<TransputProviderSpec>().Transputs)
+            {
+                if (transputSpec.Coordinates == _spec.RopeSlotCoordinates)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        private int LowestFreeSlot()
+        {
+            for (int slot = 0; ; slot++)
+            {
+                if (!_slotByPartner.ContainsValue(slot))
+                {
+                    return slot;
+                }
+            }
         }
     }
 }

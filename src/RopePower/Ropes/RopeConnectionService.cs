@@ -47,7 +47,7 @@ namespace RopePower.Ropes
 
         public int MaxInclination => _spec.MaxInclination;
 
-        /// <summary>Raised after any link is added or removed, with both ends. Phase 3 hooks the power rebuild here.</summary>
+        /// <summary>Raised after any link is added or removed, with both ends. RopePowerConnector rebuilds power from it.</summary>
         public event Action<PowerTransferStation, PowerTransferStation> LinksChanged;
 
         public void Load()
@@ -169,7 +169,8 @@ namespace RopePower.Ropes
 
         public bool HasFreeSlot(PowerTransferStation station)
         {
-            return station.RopePartners.Count < MaxRopesPerStation;
+            // The blueprint's rope-slot transput count is a hard cap regardless of settings.
+            return station.RopePartners.Count < Math.Min(MaxRopesPerStation, station.RopeSlotCapacity);
         }
 
         public bool DistanceIsValid(PowerTransferStation station, PowerTransferStation other,

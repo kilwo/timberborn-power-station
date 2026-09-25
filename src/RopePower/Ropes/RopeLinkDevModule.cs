@@ -155,7 +155,9 @@ namespace RopePower.Ropes
             Notify($"{_registry.Stations.Count} station(s), {links.Count} rope link(s) (details in Player.log)");
             foreach ((PowerTransferStation a, PowerTransferStation b) in links)
             {
-                ModLog.Info($"dev:   {a.DebugName} <-> {b.DebugName}");
+                bool sameNetwork = a.PowerGraph != null && a.PowerGraph == b.PowerGraph;
+                ModLog.Info($"dev:   {a.DebugName} <-> {b.DebugName} | rope connected: {a.IsRopeConnectedTo(b)}/{b.IsRopeConnectedTo(a)}"
+                            + $" | same network: {sameNetwork} | network supply {a.PowerGraph?.PowerSupply ?? 0} hp, demand {a.PowerGraph?.PowerDemand ?? 0} hp");
             }
         }
 
