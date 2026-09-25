@@ -258,3 +258,30 @@ no error. Nothing is highlighted, because the zipline's blocks are invisible.*
 crossbar. This is expected. The rope anchor (`RopeAnchorPoint` Y = 2.85) is set for the real 3-block
 station, while the placeholder zipline pylon is 4 blocks tall. **Decision: leave it** until the real
 model arrives in Phase 5, then set `RopeAnchorPoint` to match the model's pulley top exactly.*
+
+## Phase 5a: rope visuals (before the real station model)
+
+Phase 4 results are still to come. You can test both in one run.
+
+1. **Sag:** a linked rope is two strands, one each side of the tower top, forming a loop. Each strand
+   sags slightly in the middle. Try short (≈5), medium (≈15) and long (≈28) ropes, plus ones with a height
+   difference. Long ropes sag more, up to about ½ block. The curve should look smooth: 8 straight
+   pieces per strand, which you can tune in `mod/Configurations/RopeRenderer.blueprint.json` without
+   rebuilding.
+2. **Still misaligned with the placeholder:** strands meet the pylon pole about one block below its
+   crossbar (decided: fixed with the real model).
+3. **Powered motion:** with generator power flowing through the rope, the rope texture **moves**, and the
+   two strands move in opposite directions. Unpower it (stop or remove the generator, or unlink) and within
+   about half a second the rope is **still**. *This relies on the vanilla zipline cable shader animating
+   when `_IsOperative` = 1. It hasn't been verified yet, so report what you see.*
+4. **Placeholder spin:** when powered, the placeholder Clutch base may now animate, because the blueprint
+   gained the vanilla `MechanicalNodeAnimatorSpec`. That's fine either way. The real pulley animation
+   comes with the model.
+5. **Level slider:** lower the visible-level slider below a station's height. Its ropes cast shadows but
+   aren't drawn. Raise it again and they're back.
+6. **Preview:** the tool's green/red preview rope has the same sag.
+7. **Highlights and greyscale:**
+   - hovering a rope button in the panel highlights the whole rope, all pieces
+   - a rope to an unfinished station is grey, and turns normal colour when construction finishes
+8. **Performance:** with about 10 ropes there's no noticeable frame drop.
+9. **Log:** no `[RopePower]` errors and no `RopeRenderer blueprint not found` warning.
