@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RopePower</AssemblyName>
+    <RootNamespace>RopePower</RootNamespace>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(TimberbornManaged)Timberborn.*.dll" Private="false" />
+    <Reference Include="$(TimberbornManaged)Bindito.*.dll" Private="false" />
+    <Reference Include="$(TimberbornManaged)UnityEngine*.dll" Private="false" />
+    <Reference Include="$(TimberbornManaged)System.Collections.Immutable.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- Deploy the manifest, data and DLL to the game's Mods folder. -->
+  <Target Name="DeployMod" AfterTargets="Build" Condition="'$(DeployMod)' != 'false'">
+    <PropertyGroup>
+      <ModSource>$(MSBuildThisFileDirectory)..\..\mod\</ModSource>
+      <ModTarget>$(ModsDir)\RopePower\</ModTarget>
+    </PropertyGroup>
+    <ItemGroup>
+      <ModFiles Include="$(ModSource)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModFiles)" DestinationFiles="@(ModFiles->'$(ModTarget)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutDir)RopePower.dll" DestinationFolder="$(ModTarget)" />
+    <Message Importance="high" Text="RopePower deployed to $(ModTarget)" />
+  </Target>
+
+</Project>

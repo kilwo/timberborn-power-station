@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <!-- Timberborn install used for reference assemblies. Override with -p:TimberbornDir=... if needed. -->
+    <TimberbornDir Condition="'$(TimberbornDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Timberborn</TimberbornDir>
+    <TimberbornManaged>$(TimberbornDir)\Timberborn_Data\Managed\</TimberbornManaged>
+    <ModsDir Condition="'$(ModsDir)' == ''">$(USERPROFILE)\Documents\Timberborn\Mods</ModsDir>
+    <!-- Steam Workshop "Harmony" mod (Id "Harmony", item 3284904751). Compile-time reference only; never bundled. -->
+    <HarmonyDir Condition="'$(HarmonyDir)' == ''">C:\Program Files (x86)\Steam\steamapps\workshop\content\1062090\3284904751</HarmonyDir>
+  </PropertyGroup>
+</Project>

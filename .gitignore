@@ -1,0 +1,5 @@
+bin/
+obj/
+.vs/
+# Decompiled game code and extracted vanilla blueprints: reference only, never commit.
+decompiled/
