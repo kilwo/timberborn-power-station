@@ -307,3 +307,31 @@ check, and the inclination limit (50°).
 - **No crossings between ropes and ziplines.** They block each other like any other obstacle. Ropes may
   share cells with other ropes: a cell holding our `RopeBlock` counts as clear for a new rope. No patching
   is needed.
+
+---
+
+## 8. What Phase 4 reuses from the vanilla UI (checked 1.1.2.4)
+
+- **Views** (from `StreamingAssets/Modding/UI.zip`, extracted to `decompiled/UI/`), loaded by path with
+  `VisualElementLoader.LoadVisualElement` (the path is relative to `UI/Views/`):
+  - `Game/EntityPanel/ZiplineTowerFragment`: `Title` is a `LocalizableLabel` and `Buttons` is the container.
+  - `Game/EntityPanel/ZiplineConnectionButton`: `Icon`, `Name` and `RemoveConnection`.
+  - `Game/ZiplineConnectionTooltip`: warnings for districts, blocked and too many connections, plus
+    distance and inclination rows.
+- **Localizing a reused view:** `LocalizableLabel` is localized once, inside `LoadVisualElement` (through
+  `VisualElementInitializer` → `VisualElementLocalizer`). Setting `.text` afterwards sticks, which is how
+  the panel title becomes "Ropes:".
+- **Vanilla strings reused** (all generic): `Zipline.AddConnection`, `Zipline.RemoveConnection`,
+  `Zipline.Distance`, `Zipline.Inclination`, `Zipline.DistanceWarning`, `Zipline.InclinationWarning`,
+  `Zipline.BlockedWarning`, `Zipline.TooManyConnections`, `BuildingTools.DistrictsInConflict`.
+  The vanilla `enUS.csv` is in `Localizations.zip`.
+- **Tool:** `ITool` + `IToolDescriptor` + `IInputProcessor` + `IConstructionModeEnabler`.
+  `ToolService.ProcessInput` already exits any non-default tool on `InputService.Cancel` (Esc).
+- **Cable model:** the `Models/ZiplineCable/ZiplineCable.blueprint` template, instantiated with
+  `TemplateInstantiator.Instantiate(blueprint, parent)`. The `Cable` component is decorated with
+  `HighlightableObject`. Placement is copied from `ZiplineCableModel`. The shader floats are `_Length`
+  and `_IsOperative`.
+- **Colours:** `ZiplineSystemColorsSpec` is internal, so the values are copied into `UI/RopeColors.cs`.
+- **Entity panel registration:** `MultiBind<EntityPanelModule>().ToProvider<P>()` where
+  `P : IProvider<EntityPanelModule>` builds with `EntityPanelModule.Builder.AddMiddleFragment(fragment)`.
+

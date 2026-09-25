@@ -183,3 +183,66 @@ Gaps in the log evidence:
   user's visual check covers that; the consumer was probably idle or unstaffed on day 1.
 - Step 9 became a loop instead of a chain, so "demolish the middle station splits the chain" wasn't
   exercised.
+
+## Phase 4: connection tool, station panel, rope blocks (+ deferred Phase 3 checks)
+
+The debug keys are **gone**. Everything now goes through the station panel. Each link change writes a
+`[RopePower] power … rope connected …/… same network …` line to Player.log as evidence.
+
+Setup: a Folktails game. Dev mode with Ctrl-placing is fine for speed. Start from a clean area, because
+old test ropes still work but there's no key to list them any more.
+
+**Panel and tool**
+1. Select a finished station. The panel has a **"Ropes:"** section with an **"Add connection"** button
+   (plus icon) and 2 greyed empty slots.
+2. Click **Add connection**:
+   - the station is highlighted
+   - the cursor changes
+   - the bottom text says "Select another Power Transfer Station to connect with a rope"
+3. Hover another station within range. A **green** preview rope appears, and the tooltip shows distance
+   `x / 30` and inclination `y / 50` with green ticks.
+4. Hover invalid targets. The preview turns **red** and the tooltip gives the reason:
+   - too far: `Too far!`
+   - too steep: `Too steep!`
+   - a station that already has 3 ropes: `Too many connections!`
+   - a building in the rope's straight line: `Line obstructed!`, with the blocking building highlighted
+   - optional: stations beside two different districts' roads give the districts warning
+5. Press **Esc** in picking mode. The tool exits and the origin station is selected again.
+6. Click a valid target:
+   - the rope is created: two straight strands between the tower tops, using the zipline cable look as a
+     placeholder until Phase 5
+   - the target becomes selected, and the tool continues from it if it has free slots (like ziplines)
+   - Esc stops
+7. The station panel lists the rope: partner icon plus length. Hovering the button highlights the
+   partner and the rope. Clicking it selects and focuses the partner.
+
+**Power (including the Phase 3 gaps)**
+
+8. Generator → shaft → A, then B → shaft → consumer, with **no shafts between A and B**. Link A→B with
+   the tool. The consumer is powered.
+   - Let it run until the consumer is **working**. Then unlink and relink, and check the log's `power …`
+     line shows **demand > 0 hp**.
+9. **Unlink split (deferred from Phase 3):** click the red ✕ on the rope button:
+   - the rope disappears
+   - **the consumer loses power**
+   - the log shows `linked False, rope connected False/False, same network False`
+   - Relink and power returns.
+10. **Chain split (deferred from Phase 3):** A (generator) → B → C (consumer), linking A–B and then
+    B–C. C's consumer is powered. **Demolish B**: C's consumer loses power, and both ropes disappear.
+
+**Rope blocks**
+
+11. With a rope linked, try to place a building (e.g. a shaft on a platform, or a tall building) in a
+    cell the rope passes through. Placement is refused.
+12. Unlink that rope, and the same cell is buildable again.
+13. A rope and a vanilla zipline can't cross, in either direction.
+14. **Save/load:** ropes are drawn again after load, power still flows, and cells are still blocked.
+    Old test saves whose ropes pass through buildings may log `cell(s) along the rope are occupied and
+    were not reserved`. That's expected and fine.
+15. **Unfinished:** link a finished station to one still under construction. The rope is drawn grey,
+    and it turns normal colour and carries power once construction finishes.
+16. **Log:** no exceptions and no `patch failed` / `could not be loaded` / `not found` errors from
+    `[RopePower]`.
+
+Report: pass/fail for each step, screenshots of the panel, tool preview and ropes (steps 1, 3, 4, 6),
+and Player.log in the project folder.
