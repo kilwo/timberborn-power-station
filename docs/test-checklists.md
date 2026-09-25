@@ -163,3 +163,23 @@ unambiguous.
 Report: pass/fail for each step, and copy Player.log into the project folder. If power doesn't flow in
 step 3, run Ctrl+Alt+K first so the log captures the link state.
 
+
+**Result (2026-09-25): core merge passed.** The user reported "all looked ok". Log evidence:
+- Step 1: `Harmony patches applied`.
+- Step 3: A (83,58,5) and B (85,64,5), 6.3 apart, showed `rope connected: True/True | same network: True
+  | network supply 79 hp`.
+- Step 5: the link was restored after save/load.
+- Step 6: B was demolished (unlinked), rebuilt and relinked.
+- Step 7: A was demolished, rebuilt and relinked.
+- A third station C (89,62,5) was linked to **both** A and B with Ctrl+Alt+J. That made a loop of ropes,
+  and it caused no errors.
+- Step 10: no exceptions, errors or warnings anywhere in the log.
+
+Gaps in the log evidence:
+- Step 4 (Ctrl+Alt+U power drop) never ran. There's no `removed N link(s)` line. This is the only path
+  where *our* refresh splits a network (on demolish, vanilla node removal does it). The Phase 4 remove
+  button uses the same path.
+- Ctrl+Alt+K always reported `demand 0 hp`, so the log doesn't show the consumer drawing power. Only the
+  user's visual check covers that; the consumer was probably idle or unstaffed on day 1.
+- Step 9 became a loop instead of a chain, so "demolish the middle station splits the chain" wasn't
+  exercised.
