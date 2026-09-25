@@ -246,3 +246,10 @@ old test ropes still work but there's no key to list them any more.
 
 Report: pass/fail for each step, screenshots of the panel, tool preview and ropes (steps 1, 3, 4, 6),
 and Player.log in the project folder.
+
+*Phase 4 bug (2026-09-25): hovering a target whose rope crossed a zipline threw a NullReferenceException in
+`Highlighter.HighlightPrimary`, called from `RopePreviewRenderer.Draw`. The cause was zipline cable blocks
+(not highlightable) being passed as "blocking objects". They're now filtered out, and the tool has a
+fail-safe that logs once and exits. Retest step 13: the rope turns red with `Line obstructed!` and there's
+no error. Nothing is highlighted, because the zipline's blocks are invisible.*
+

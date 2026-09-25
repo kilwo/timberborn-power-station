@@ -1,3 +1,4 @@
+using System;
 using RopePower.Ropes;
 using RopePower.Stations;
 using Timberborn.ConstructionMode;
@@ -89,6 +90,21 @@ namespace RopePower.UI
         }
 
         public bool ProcessInput()
+        {
+            try
+            {
+                return ProcessInputSafe();
+            }
+            catch (Exception e)
+            {
+                // Fail safe: this runs every frame, so never let an error repeat. Log it and leave the tool.
+                ModLog.Error($"rope tool failed and was closed: {e}");
+                _toolService.SwitchToDefaultTool();
+                return true;
+            }
+        }
+
+        private bool ProcessInputSafe()
         {
             if (!_origin || _origin.IsDeleted)
             {

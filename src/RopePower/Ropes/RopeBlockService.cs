@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using RopePower.Stations;
+using Timberborn.BlockObjectModelSystem;
 using Timberborn.BlockSystem;
 using Timberborn.BlueprintSystem;
 using Timberborn.Common;
 using Timberborn.Coordinates;
 using Timberborn.RootProviders;
+using Timberborn.SelectionSystem;
 using Timberborn.SingletonSystem;
 using Timberborn.ZiplineSystem;
 using UnityEngine;
@@ -100,7 +102,12 @@ namespace RopePower.Ropes
                 }
                 foreach (BlockObject blockObject in _blockService.GetObjectsAt(cell))
                 {
-                    if (!blockingObjects.Contains(blockObject))
+                    // Only objects that can be highlighted. Invisible blockers such as vanilla zipline cable blocks have
+                    // no model/HighlightableObject, and Highlighter.HighlightPrimary throws on them (seen in-game when a
+                    // rope crossed a zipline). ZiplineConnectionService.GetBlockingObjects filters on IBlockObjectModel too.
+                    if (blockObject.HasComponent<IBlockObjectModel>()
+                        && blockObject.HasComponent<HighlightableObject>()
+                        && !blockingObjects.Contains(blockObject))
                     {
                         blockingObjects.Add(blockObject);
                     }

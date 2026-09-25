@@ -334,4 +334,10 @@ check, and the inclination limit (50°).
 - **Colours:** `ZiplineSystemColorsSpec` is internal, so the values are copied into `UI/RopeColors.cs`.
 - **Entity panel registration:** `MultiBind<EntityPanelModule>().ToProvider<P>()` where
   `P : IProvider<EntityPanelModule>` builds with `EntityPanelModule.Builder.AddMiddleFragment(fragment)`.
+- **Highlighter gotcha:** `Highlighter.HighlightPrimary(target, color)` (and `RollingHighlighter`) look up the
+  target's `HighlightableObject` and call into it **without a null check**. They also cache the null per
+  GameObject. So only pass objects that have `HighlightableObject`. Invisible block entities such as zipline
+  `CableBlock`s don't have one, and passing them threw a NullReferenceException in the rope tool
+  (2026-09-25, rope crossing a zipline). Vanilla `GetBlockingObjects` filters on `IBlockObjectModel`, and we
+  filter on both.
 
