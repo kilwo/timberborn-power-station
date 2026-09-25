@@ -102,3 +102,9 @@ logs `station (x, y, z) finished`.*
 10. **Log:** no exceptions mentioning `RopePower` or `PowerTransferStation`.
 
 Report: pass/fail for each step, plus the `[RopePower]` lines from steps 6 and 7.
+
+**Partial result (2026-09-25, third attempt):**
+- Steps 1–4 passed. The debug keys were active, linking and counting worked, and AlreadyLinked, TooSteep
+  (1 across, 3 up) and TooLong (about 30.6 blocks) were all rejected correctly.
+- No exceptions.
+- Steps 5–8 were not run yet: the session ended with an autosave and no reload.
