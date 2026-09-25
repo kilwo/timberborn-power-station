@@ -109,7 +109,10 @@ on each end, and trigger the rebuild.
   using `"Blueprints#append": [...]`. `.timbermesh` files load straight from the mod folder, with no Unity
   and no asset bundle.
 - Blueprint model reference: `"TimbermeshSpec": { "Model": "Buildings/.../X.Folktails.Model" }` (path
-  without extension). Unfinished state uses a nested `ConstructionBases/ConstructionBase1x1/...` blueprint.
+  without extension). `TimbermeshSpec.Model` is an `AssetRef<BinaryData>` resolved lazily through
+  `IAssetLoader` (`AssetRefDeserializer`). The same loader serves vanilla resources and mod files, so a
+  mod blueprint can reference **vanilla** models by path. The Phase 1 placeholder does this with the
+  Clutch and ZiplinePylon models. Unfinished state uses a nested `ConstructionBases/ConstructionBase1x1/...` blueprint.
 
 ---
 

@@ -1,0 +1,4 @@
+ID,Text,Comment
+Building.PowerTransferStation.DisplayName,Power Transfer Station,
+Building.PowerTransferStation.Description,"Connects to power shafts on all four sides. Link stations with rope loops to carry power over long distances.",
+Building.PowerTransferStation.FlavorDescription,"Why build a hundred shafts when one rope will do?",
