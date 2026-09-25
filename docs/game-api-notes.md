@@ -54,6 +54,23 @@ slots are ordinary blueprint transputs:
   selected or previewed, so the slots get markers inside the tower. This is probably hidden by the model;
   revisit in Phase 5.
 
+**Implemented in Phase 3:**
+- `Patches/TransputMapGetFacingTransputPatch.cs`: a postfix that runs only when vanilla returned null and
+  the transput's `BaseDirection == Bottom`.
+- `PowerTransferStation.GetRopePartnerTransput` / `RefreshPowerConnections`: slots are identified by
+  `Transput.Offset == spec.RopeSlotCoordinates` and `BaseDirection == Bottom`, in `MechanicalNode.Transputs`
+  order.
+- `RopePowerConnector`: refreshes both ends on `LinksChanged`. It skips a station that is being deleted,
+  not yet enabled (not finished or still loading), or detached.
+- Harmony is applied in `RopePowerModStarter` (an `IModStarter`), and the manifest has
+  `"RequiredMods": [{"Id": "Harmony"}]`, the format used by Workshop mods and parsed by
+  `Timberborn.Modding.ManifestLoader` (optional `MinimumVersion`).
+- `ModCodeStarter` calls `Assembly.Load(bytes)` on **every** `*.dll` under a mod folder, so we must never
+  deploy `0Harmony.dll` ourselves.
+
+Load order observed in Phase 2: `PostInitializeEntity` (links restored) runs before `OnEnterFinishedState`
+(the node joins its graph), so ropes connect on load with no refresh.
+
 Slot assignment doesn't need to be persisted. On load we restore the link list, give each link a free slot
 on each end, and trigger the rebuild.
 

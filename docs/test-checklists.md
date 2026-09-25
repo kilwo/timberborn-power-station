@@ -108,3 +108,58 @@ Report: pass/fail for each step, plus the `[RopePower]` lines from steps 6 and 7
   (1 across, 3 up) and TooLong (about 30.6 blocks) were all rejected correctly.
 - No exceptions.
 - Steps 5–8 were not run yet: the session ended with an autosave and no reload.
+
+**Final result (2026-09-25): passed.** Phase 2 is done.
+- Reload 1 restored 2 links, and reload 2 restored 5 links, each exactly once. There were no `dropped`
+  warnings.
+- Station (88, 62, 5) linked 3 times, then got `SourceFull`.
+- Demolishing (83, 68, 5) logged `unlinked … <-> (88, 62, 5)`.
+- Ctrl+Alt+U removed 1 link.
+- No exceptions.
+- Not explicitly run: a reload right after the demolish. Phase 3 step 6 covers it.
+- Observation: on load, `restored link` lines come **before** the `finished` lines. `PostInitializeEntity`
+  runs before `OnEnterFinishedState`, so links exist before the mechanical nodes join graphs.
+
+## Phase 3: power graph merge ⚠️
+
+The ropes should now carry power. There's still no rope visual. Use the Ctrl+Alt keys from Phase 2 (no
+dev mode needed). **Ctrl+Alt+K** now logs each link as
+`rope connected: True/True | same network: True | network supply X hp, demand Y hp`.
+
+**Setup:** use a clean area or a new Folktails game. **Demolish the old test stations** so "newest" is
+unambiguous.
+- Generator side: a generator (e.g. a Water Wheel in a current, or a Power Wheel) → shaft → **station A**.
+- Consumer side: **station B** 10–25 blocks away with **no shafts between A and B** → shaft → a consumer
+  (e.g. a Lumber Mill or Gear Workshop, staffed).
+- Finish A first, then B. In dev mode, Ctrl-placing places buildings finished.
+
+1. **Patch loaded:** Player.log shows `[RopePower] Harmony patches applied` (at the main menu, before the
+   save loads). There's no `patching failed` line.
+2. **Before linking:** the consumer shows no power.
+3. **Link:** press **Ctrl+Alt+L**. The consumer becomes powered within a moment. Selecting a shaft on
+   B's side shows the generator's supply. Ctrl+Alt+K shows
+   `rope connected: True/True | same network: True`.
+4. **Unlink:** press **Ctrl+Alt+U** (B is newest). The consumer loses power, and Ctrl+Alt+K shows
+   0 links. Press **Ctrl+Alt+L** again and power comes back.
+5. **Save/load:** save and reload while linked. The consumer is powered straight after load, and
+   Ctrl+Alt+K shows `True/True`, `same network: True`.
+6. **Demolish and rebuild B:**
+   - Demolish B. The consumer loses power, the log shows `unlinked`, and A's side still runs.
+   - Build a new B in the same spot, then press **Ctrl+Alt+L** (links the new B with A) and power returns.
+   - Save and reload, and it's still powered. Nothing about the old B is restored.
+7. **Demolish and rebuild A:** the same as step 6, but from the generator side. After rebuilding A,
+   press **Ctrl+Alt+L**.
+8. **Other rebuilds:** while linked:
+   - add a shaft branch with a second consumer on A's side
+   - remove and re-add the shaft between B and the consumer
+   - build and then demolish an unrelated shaft touching A's network
+
+   Power keeps flowing to the consumer after each change.
+9. **Chain:** build station C 10–25 blocks beyond B, with a consumer attached. Press **Ctrl+Alt+L**, which
+   links C to B (the two newest). C's consumer is powered from A's generator through A→B→C. Demolish B
+   and both consumers lose power.
+10. **Log:** no exceptions and no `GetFacingTransput patch failed`.
+
+Report: pass/fail for each step, and copy Player.log into the project folder. If power doesn't flow in
+step 3, run Ctrl+Alt+K first so the log captures the link state.
+
