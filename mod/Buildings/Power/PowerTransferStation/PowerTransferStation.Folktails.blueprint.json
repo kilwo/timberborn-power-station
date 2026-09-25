@@ -159,7 +159,11 @@
       "X": 0,
       "Y": 0,
       "Z": 2
-    }
+    },
+    "PulleyRadius": 0.175
+  },
+  "MechanicalNodeAnimatorSpec": {
+    "MinSpeedMultiplier": 0.0
   },
   "Children": {
     "#Finished": {

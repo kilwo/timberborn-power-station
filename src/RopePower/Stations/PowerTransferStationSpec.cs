@@ -16,5 +16,9 @@ namespace RopePower.Stations
         /// </summary>
         [Serialize]
         public Vector3Int RopeSlotCoordinates { get; init; }
+
+        /// <summary>Horizontal distance from the pulley centre to each rope strand, in blocks (0 = default 0.175, the zipline strand offset).</summary>
+        [Serialize]
+        public float PulleyRadius { get; init; }
     }
 }

@@ -43,7 +43,7 @@ namespace RopePower.UI
             if (_preview != null)
             {
                 _preview.SetVisible(true);
-                _preview.Update(station.RopeAnchorPoint, other.RopeAnchorPoint);
+                _preview.Update(station.RopeAnchorPoint, other.RopeAnchorPoint, station.PulleyRadius);
                 _preview.Highlight(connectable ? RopeColors.Connectable : RopeColors.NotConnectable);
             }
             if (error == RopeLinkError.Obstructed)

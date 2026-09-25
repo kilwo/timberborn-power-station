@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RopePower.Ropes;
 using Timberborn.BaseComponentSystem;
+using Timberborn.BlockObjectModelSystem;
 using Timberborn.BlockSystem;
 using Timberborn.Coordinates;
 using Timberborn.EntitySystem;
@@ -72,6 +73,21 @@ namespace RopePower.Stations
         public bool IsBeingDeleted { get; private set; }
 
         public MechanicalGraph PowerGraph => _mechanicalNode.Graph;
+
+        /// <summary>Active (not blocked, e.g. flooded) and on a powered network; drives the moving-rope visual.</summary>
+        public bool IsPowered => _mechanicalNode.ActiveAndPowered;
+
+        public float PulleyRadius => _spec.PulleyRadius > 0f ? _spec.PulleyRadius : 0.175f;
+
+        /// <summary>False while the level visibility slider hides this station.</summary>
+        public bool IsAnyModelShown
+        {
+            get
+            {
+                BlockObjectModelController controller = GetComponent<BlockObjectModelController>();
+                return controller == null || controller.IsAnyModelShown;
+            }
+        }
 
         public void Awake()
         {

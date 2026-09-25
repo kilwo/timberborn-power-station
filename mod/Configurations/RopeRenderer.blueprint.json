@@ -1,0 +1,7 @@
+{
+  "RopeRendererSpec": {
+    "SagPerLength": 0.015,
+    "MaxSag": 0.45,
+    "SegmentsPerStrand": 8
+  }
+}
