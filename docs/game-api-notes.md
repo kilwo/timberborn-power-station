@@ -213,7 +213,18 @@ Global config specs:
 
 Dev menu:
 - Dev mode is toggled with **Alt+Shift+Z** (`KeyBindings/Dev/KeyBinding.ToggleDevMode`, unchangeable).
-- `IDevModule` methods appear in the dev panel while dev mode is on.
+- `IDevModule` methods appear in `Timberborn.DebuggingUI.DevPanel`. That panel sits **bottom-left**, is
+  shown only in dev mode and is **collapsed by default** (click the title). It sorts methods by name and
+  has a filter box. It's easy to miss, which is what happened in the first Phase 2 test.
+- `DevMethod.CreateBindable(name, keyBindingId, action)` only *labels* the button with the key. The
+  module must poll the key itself: `IPriorityInputProcessor.ProcessInput()` with
+  `InputService.IsKeyDown(id)`, registered via `InputService.AddInputProcessor` in `Load()`. This is the
+  same as `Timberborn.Debugging.DevModeController`.
+- Key bindings are blueprints with `KeyBindingSpec` plus `PrimaryInputBindingSpec`, loaded through
+  `GetSpecs<KeyBindingSpec>()`, so mod blueprints work. Modifier strings include `"Ctrl, Alt"`.
+  `KeyBindingRegistry.IsDown(id)` **throws `KeyNotFoundException`** for unknown ids.
+- `QuickNotificationService.SendNotification(string)` (public, Game context) shows an on-screen toast.
+- In dev mode, holding **Ctrl** while placing a building places it already finished (`PlaceFinished`).
 
 Component wiring: in a `[Context("Game")]` `Configurator`, use
 `MultiBind<TemplateModule>().ToProvider(...)` with `TemplateModule.Builder.AddDecorator<TSpec, TComponent>()`.
