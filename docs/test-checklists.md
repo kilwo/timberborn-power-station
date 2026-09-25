@@ -49,9 +49,25 @@ Links are **data only** in this phase. They don't carry power yet (that's Phase 
 visual, and no clearance or rope-block check. Everything is verified through `Player.log` lines starting
 with `[RopePower]`.
 
-Setup: a Folktails game. Turn on dev mode with **Alt+Shift+Z**. The dev panel lists these actions:
-`Rope Power: link two newest stations`, `… link newest station to all others`, `… unlink newest station`,
-and `… log all rope links`. "Newest" means most recently **finished**.
+Setup: a Folktails game. Turn on dev mode with **Alt+Shift+Z**. In dev mode, **hold Ctrl while placing**
+a station to place it already finished (vanilla `PlaceFinished`). "Newest" means most recently
+**finished**; unfinished stations don't count.
+
+Dev actions: each result appears as an on-screen notification starting "Rope Power:" and is also logged.
+
+| Shortcut (dev mode only) | Action |
+|---|---|
+| **Ctrl+Alt+L** | link two newest stations |
+| **Ctrl+Alt+J** | link newest station to all others |
+| **Ctrl+Alt+U** | unlink newest station |
+| **Ctrl+Alt+K** | log all rope links (count on screen, pairs in Player.log) |
+
+The same actions are in the dev panel. It appears **bottom-left** while dev mode is on and is collapsed
+by default: click its title, then type "rope" in the filter box.
+
+*First attempt (2026-09-25): the user found no way to trigger linking. The log showed dev mode enabled
+but no Rope Power action invoked, because the panel is collapsed and wasn't found. The shortcuts and
+notifications were added as a fix.*
 
 1. **Load:** the log shows `[RopePower] loaded (max span 30, max ropes 3, max inclination 50)` and **not**
    `RopeConnectionService blueprint not found`.

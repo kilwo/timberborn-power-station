@@ -1,0 +1,15 @@
+{
+  "KeyBindingSpec": {
+    "Id": "RopePowerLogLinks",
+    "GroupId": "Dev",
+    "LocKey": "",
+    "Order": 903,
+    "AllowOtherModifiers": false,
+    "DevModeOnly": true
+  },
+  "PrimaryInputBindingSpec": {
+    "Path": "/Keyboard/k",
+    "InputModifiers": "Ctrl, Alt",
+    "Unchangeable": false
+  }
+}

@@ -1,32 +1,93 @@
+using System.Collections.Generic;
 using System.Linq;
 using RopePower.Stations;
 using Timberborn.Debugging;
+using Timberborn.InputSystem;
+using Timberborn.QuickNotificationSystem;
+using Timberborn.SingletonSystem;
 
 namespace RopePower.Ropes
 {
     /// <summary>
-    /// Temporary Phase 2 debug trigger, shown in the game's dev menu. Remove once the connection tool exists (Phase 4).
-    /// Pattern copied from Timberborn.ZiplineSystemUI.ZiplineConnectionDevModule.
+    /// Temporary Phase 2 debug trigger. Remove once the connection tool exists (Phase 4).
+    /// Actions appear in the dev panel (bottom-left in dev mode, click its title to expand) and have
+    /// Ctrl+Alt shortcuts defined in mod/KeyBindings/Dev. Results are shown as on-screen notifications.
+    /// Pattern: Timberborn.ZiplineSystemUI.ZiplineConnectionDevModule + Timberborn.Debugging.DevModeController.
     /// </summary>
-    public class RopeLinkDevModule : IDevModule
+    public class RopeLinkDevModule : IDevModule, ILoadableSingleton, IPriorityInputProcessor
     {
+        private const string LinkTwoNewestKey = "RopePowerLinkTwoNewest";
+        private const string LinkNewestToAllKey = "RopePowerLinkNewestToAll";
+        private const string UnlinkNewestKey = "RopePowerUnlinkNewest";
+        private const string LogLinksKey = "RopePowerLogLinks";
+
         private readonly RopeConnectionService _ropeConnectionService;
         private readonly PowerTransferStationRegistry _registry;
+        private readonly InputService _inputService;
+        private readonly DevModeManager _devModeManager;
+        private readonly QuickNotificationService _quickNotificationService;
 
-        public RopeLinkDevModule(RopeConnectionService ropeConnectionService, PowerTransferStationRegistry registry)
+        private bool _keysAvailable = true;
+
+        public RopeLinkDevModule(RopeConnectionService ropeConnectionService,
+                                 PowerTransferStationRegistry registry,
+                                 InputService inputService,
+                                 DevModeManager devModeManager,
+                                 QuickNotificationService quickNotificationService)
         {
             _ropeConnectionService = ropeConnectionService;
             _registry = registry;
+            _inputService = inputService;
+            _devModeManager = devModeManager;
+            _quickNotificationService = quickNotificationService;
+        }
+
+        public void Load()
+        {
+            _inputService.AddInputProcessor(this);
         }
 
         public DevModuleDefinition GetDefinition()
         {
             return new DevModuleDefinition.Builder()
-                .AddMethod(DevMethod.Create("Rope Power: link two newest stations", LinkTwoNewest))
-                .AddMethod(DevMethod.Create("Rope Power: link newest station to all others", LinkNewestToAll))
-                .AddMethod(DevMethod.Create("Rope Power: unlink newest station", UnlinkNewest))
-                .AddMethod(DevMethod.Create("Rope Power: log all rope links", LogAllLinks))
+                .AddMethod(DevMethod.CreateBindable("Rope Power: link two newest stations", LinkTwoNewestKey, LinkTwoNewest))
+                .AddMethod(DevMethod.CreateBindable("Rope Power: link newest station to all others", LinkNewestToAllKey, LinkNewestToAll))
+                .AddMethod(DevMethod.CreateBindable("Rope Power: unlink newest station", UnlinkNewestKey, UnlinkNewest))
+                .AddMethod(DevMethod.CreateBindable("Rope Power: log all rope links", LogLinksKey, LogAllLinks))
                 .Build();
+        }
+
+        public void ProcessInput()
+        {
+            if (!_keysAvailable || !_devModeManager.Enabled)
+            {
+                return;
+            }
+            try
+            {
+                if (_inputService.IsKeyDown(LinkTwoNewestKey))
+                {
+                    LinkTwoNewest();
+                }
+                else if (_inputService.IsKeyDown(LinkNewestToAllKey))
+                {
+                    LinkNewestToAll();
+                }
+                else if (_inputService.IsKeyDown(UnlinkNewestKey))
+                {
+                    UnlinkNewest();
+                }
+                else if (_inputService.IsKeyDown(LogLinksKey))
+                {
+                    LogAllLinks();
+                }
+            }
+            catch (KeyNotFoundException)
+            {
+                // KeyBindingRegistry throws for unknown ids, e.g. if the KeyBindings blueprints failed to load.
+                _keysAvailable = false;
+                ModLog.Warn("dev: Rope Power key bindings not found; use the dev panel instead.");
+            }
         }
 
         private void LinkTwoNewest()
@@ -34,10 +95,10 @@ namespace RopePower.Ropes
             PowerTransferStation[] newest = _registry.MostRecentlyFinished().Take(2).ToArray();
             if (newest.Length < 2)
             {
-                ModLog.Info("dev: need at least two finished stations to link.");
+                Notify($"Need two finished stations (have {newest.Length}).");
                 return;
             }
-            _ropeConnectionService.Link(newest[1], newest[0]);
+            Notify(Describe(newest[1], newest[0], _ropeConnectionService.Link(newest[1], newest[0])));
         }
 
         private void LinkNewestToAll()
@@ -45,13 +106,25 @@ namespace RopePower.Ropes
             PowerTransferStation[] stations = _registry.MostRecentlyFinished().ToArray();
             if (stations.Length < 2)
             {
-                ModLog.Info("dev: need at least two finished stations to link.");
+                Notify($"Need two finished stations (have {stations.Length}).");
                 return;
             }
+            int linked = 0;
+            var failures = new List<RopeLinkError>();
             for (int i = 1; i < stations.Length; i++)
             {
-                _ropeConnectionService.Link(stations[0], stations[i]);
+                RopeLinkError error = _ropeConnectionService.Link(stations[0], stations[i]);
+                if (error == RopeLinkError.None)
+                {
+                    linked++;
+                }
+                else
+                {
+                    failures.Add(error);
+                }
             }
+            string failureText = failures.Count == 0 ? "" : $", rejected: {string.Join(", ", failures)}";
+            Notify($"{stations[0].DebugName}: {linked} new link(s){failureText}");
         }
 
         private void UnlinkNewest()
@@ -59,20 +132,35 @@ namespace RopePower.Ropes
             PowerTransferStation newest = _registry.MostRecentlyFinished().FirstOrDefault();
             if (!newest)
             {
-                ModLog.Info("dev: no finished station.");
+                Notify("No finished station.");
                 return;
             }
+            int count = newest.RopePartners.Count;
             _ropeConnectionService.UnlinkAll(newest);
+            Notify($"{newest.DebugName}: removed {count} link(s)");
         }
 
         private void LogAllLinks()
         {
             var links = _ropeConnectionService.AllLinks(_registry.Stations).ToList();
-            ModLog.Info($"dev: {_registry.Stations.Count} station(s), {links.Count} rope link(s)");
+            Notify($"{_registry.Stations.Count} station(s), {links.Count} rope link(s) (details in Player.log)");
             foreach ((PowerTransferStation a, PowerTransferStation b) in links)
             {
                 ModLog.Info($"dev:   {a.DebugName} <-> {b.DebugName}");
             }
+        }
+
+        private static string Describe(PowerTransferStation a, PowerTransferStation b, RopeLinkError error)
+        {
+            return error == RopeLinkError.None
+                ? $"Linked {a.DebugName} <-> {b.DebugName}"
+                : $"Not linked ({error}): {a.DebugName} -> {b.DebugName}";
+        }
+
+        private void Notify(string text)
+        {
+            ModLog.Info("dev: " + text);
+            _quickNotificationService.SendNotification("Rope Power: " + text);
         }
     }
 }

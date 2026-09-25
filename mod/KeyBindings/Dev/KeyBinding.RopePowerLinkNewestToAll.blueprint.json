@@ -1,0 +1,15 @@
+{
+  "KeyBindingSpec": {
+    "Id": "RopePowerLinkNewestToAll",
+    "GroupId": "Dev",
+    "LocKey": "",
+    "Order": 901,
+    "AllowOtherModifiers": false,
+    "DevModeOnly": true
+  },
+  "PrimaryInputBindingSpec": {
+    "Path": "/Keyboard/j",
+    "InputModifiers": "Ctrl, Alt",
+    "Unchangeable": false
+  }
+}
