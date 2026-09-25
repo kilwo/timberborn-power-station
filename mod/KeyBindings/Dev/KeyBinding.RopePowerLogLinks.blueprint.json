@@ -5,7 +5,7 @@
     "LocKey": "",
     "Order": 903,
     "AllowOtherModifiers": false,
-    "DevModeOnly": true
+    "DevModeOnly": false
   },
   "PrimaryInputBindingSpec": {
     "Path": "/Keyboard/k",

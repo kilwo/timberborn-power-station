@@ -3,3 +3,5 @@ obj/
 .vs/
 # Decompiled game code and extracted vanilla blueprints: reference only, never commit.
 decompiled/
+# Logs copied in for debugging
+Player*.log

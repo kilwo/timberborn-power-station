@@ -10,8 +10,8 @@ namespace RopePower.Ropes
 {
     /// <summary>
     /// Temporary Phase 2 debug trigger. Remove once the connection tool exists (Phase 4).
-    /// Actions appear in the dev panel (bottom-left in dev mode, click its title to expand) and have
-    /// Ctrl+Alt shortcuts defined in mod/KeyBindings/Dev. Results are shown as on-screen notifications.
+    /// Ctrl+Alt shortcuts (mod/KeyBindings/Dev) work with or without dev mode; the same actions are in the dev panel
+    /// (bottom-left in dev mode, click its title to expand). Results are shown as on-screen notifications.
     /// Pattern: Timberborn.ZiplineSystemUI.ZiplineConnectionDevModule + Timberborn.Debugging.DevModeController.
     /// </summary>
     public class RopeLinkDevModule : IDevModule, ILoadableSingleton, IPriorityInputProcessor
@@ -24,21 +24,19 @@ namespace RopePower.Ropes
         private readonly RopeConnectionService _ropeConnectionService;
         private readonly PowerTransferStationRegistry _registry;
         private readonly InputService _inputService;
-        private readonly DevModeManager _devModeManager;
         private readonly QuickNotificationService _quickNotificationService;
 
         private bool _keysAvailable = true;
+        private bool _keysVerified;
 
         public RopeLinkDevModule(RopeConnectionService ropeConnectionService,
                                  PowerTransferStationRegistry registry,
                                  InputService inputService,
-                                 DevModeManager devModeManager,
                                  QuickNotificationService quickNotificationService)
         {
             _ropeConnectionService = ropeConnectionService;
             _registry = registry;
             _inputService = inputService;
-            _devModeManager = devModeManager;
             _quickNotificationService = quickNotificationService;
         }
 
@@ -59,12 +57,23 @@ namespace RopePower.Ropes
 
         public void ProcessInput()
         {
-            if (!_keysAvailable || !_devModeManager.Enabled)
+            // Deliberately not gated on dev mode (first Phase 2 retest: dev mode was off and the keys silently did nothing).
+            if (!_keysAvailable)
             {
                 return;
             }
             try
             {
+                if (!_keysVerified)
+                {
+                    // Touch every binding once so a missing one is reported immediately, not on first use.
+                    _inputService.IsKeyDown(LinkNewestToAllKey);
+                    _inputService.IsKeyDown(UnlinkNewestKey);
+                    _inputService.IsKeyDown(LogLinksKey);
+                    _inputService.IsKeyDown(LinkTwoNewestKey);
+                    _keysVerified = true;
+                    ModLog.Info("dev: debug keys active (Ctrl+Alt+L link two newest, J link newest to all, U unlink newest, K count links)");
+                }
                 if (_inputService.IsKeyDown(LinkTwoNewestKey))
                 {
                     LinkTwoNewest();

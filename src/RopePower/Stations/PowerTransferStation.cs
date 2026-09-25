@@ -91,6 +91,7 @@ namespace RopePower.Stations
         public void OnEnterFinishedState()
         {
             _registry.MarkFinished(this);
+            ModLog.Info($"{DebugName} finished ({_registry.Stations.Count} station(s) total)");
         }
 
         public void OnExitFinishedState()
