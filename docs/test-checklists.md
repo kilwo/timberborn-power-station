@@ -253,3 +253,8 @@ and Player.log in the project folder.
 fail-safe that logs once and exits. Retest step 13: the rope turns red with `Line obstructed!` and there's
 no error. Nothing is highlighted, because the zipline's blocks are invisible.*
 
+
+*Phase 4 visual note (2026-09-25): the ropes meet the placeholder pylon pole about one block below its
+crossbar. This is expected. The rope anchor (`RopeAnchorPoint` Y = 2.85) is set for the real 3-block
+station, while the placeholder zipline pylon is 4 blocks tall. **Decision: leave it** until the real
+model arrives in Phase 5, then set `RopeAnchorPoint` to match the model's pulley top exactly.*
