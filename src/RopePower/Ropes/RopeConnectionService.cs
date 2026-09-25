@@ -14,7 +14,7 @@ namespace RopePower.Ropes
     /// <summary>
     /// The only place that adds or removes rope links, keeping both ends in sync.
     /// Validation mirrors Timberborn.ZiplineSystem.ZiplineConnectionService (1.1.2.4).
-    /// TODO(after Phase 3): clearance along the rope + RopeBlock reservation (see docs/game-api-notes.md §7).
+    /// Clearance and cell reservation along the rope are delegated to RopeBlockService.
     /// </summary>
     public class RopeConnectionService : ILoadableSingleton
     {
@@ -32,13 +32,16 @@ namespace RopePower.Ropes
 
         private readonly ISpecService _specService;
         private readonly DistrictCenterRegistry _districtCenterRegistry;
+        private readonly RopeBlockService _ropeBlockService;
 
         private RopeConnectionServiceSpec _spec = DefaultSpec;
 
-        public RopeConnectionService(ISpecService specService, DistrictCenterRegistry districtCenterRegistry)
+        public RopeConnectionService(ISpecService specService, DistrictCenterRegistry districtCenterRegistry,
+                                     RopeBlockService ropeBlockService)
         {
             _specService = specService;
             _districtCenterRegistry = districtCenterRegistry;
+            _ropeBlockService = ropeBlockService;
         }
 
         public int MaxRopesPerStation => _spec.MaxRopesPerStation;
@@ -104,6 +107,10 @@ namespace RopePower.Ropes
             {
                 return RopeLinkError.DifferentDistricts;
             }
+            if (!_ropeBlockService.PathIsClear(station, other))
+            {
+                return RopeLinkError.Obstructed;
+            }
             return RopeLinkError.None;
         }
 
@@ -117,6 +124,7 @@ namespace RopePower.Ropes
                 return error;
             }
             AddLink(station, other);
+            _ropeBlockService.Reserve(station, other, skipBlockedCells: false);
             ModLog.Info($"linked {station.DebugName} <-> {other.DebugName} " +
                         $"(span {Vector3.Distance(station.RopeAnchorPoint, other.RopeAnchorPoint):0.0})");
             return RopeLinkError.None;
@@ -144,6 +152,8 @@ namespace RopePower.Ropes
                 return;
             }
             AddLink(station, other);
+            // Saves from before rope blocks existed (or odd edits) may have objects in the way: keep the link, skip those cells.
+            _ropeBlockService.Reserve(station, other, skipBlockedCells: true);
             ModLog.Info($"restored link {station.DebugName} <-> {other.DebugName}");
         }
 
@@ -155,6 +165,7 @@ namespace RopePower.Ropes
             }
             station.RemovePartner(other);
             other.RemovePartner(station);
+            _ropeBlockService.Release(station, other);
             ModLog.Info($"unlinked {station.DebugName} <-> {other.DebugName}");
             LinksChanged?.Invoke(station, other);
         }

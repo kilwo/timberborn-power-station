@@ -22,6 +22,7 @@ namespace RopePower.Ropes
         private const string LogLinksKey = "RopePowerLogLinks";
 
         private readonly RopeConnectionService _ropeConnectionService;
+        private readonly RopeBlockService _ropeBlockService;
         private readonly PowerTransferStationRegistry _registry;
         private readonly InputService _inputService;
         private readonly QuickNotificationService _quickNotificationService;
@@ -30,11 +31,13 @@ namespace RopePower.Ropes
         private bool _keysVerified;
 
         public RopeLinkDevModule(RopeConnectionService ropeConnectionService,
+                                 RopeBlockService ropeBlockService,
                                  PowerTransferStationRegistry registry,
                                  InputService inputService,
                                  QuickNotificationService quickNotificationService)
         {
             _ropeConnectionService = ropeConnectionService;
+            _ropeBlockService = ropeBlockService;
             _registry = registry;
             _inputService = inputService;
             _quickNotificationService = quickNotificationService;
@@ -152,7 +155,7 @@ namespace RopePower.Ropes
         private void LogAllLinks()
         {
             var links = _ropeConnectionService.AllLinks(_registry.Stations).ToList();
-            Notify($"{_registry.Stations.Count} station(s), {links.Count} rope link(s) (details in Player.log)");
+            Notify($"{_registry.Stations.Count} station(s), {links.Count} rope link(s), {_ropeBlockService.ReservedCells.Count()} rope block(s) (details in Player.log)");
             foreach ((PowerTransferStation a, PowerTransferStation b) in links)
             {
                 bool sameNetwork = a.PowerGraph != null && a.PowerGraph == b.PowerGraph;

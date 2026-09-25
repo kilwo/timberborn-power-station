@@ -10,6 +10,7 @@ namespace RopePower.Ropes
         TargetFull,
         TooLong,
         TooSteep,
-        DifferentDistricts
+        DifferentDistricts,
+        Obstructed
     }
 }

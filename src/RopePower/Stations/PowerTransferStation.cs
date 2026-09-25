@@ -63,6 +63,8 @@ namespace RopePower.Stations
 
         public string DebugName => $"station {Coordinates}";
 
+        public IEnumerable<Vector3Int> OccupiedCoordinates => _blockObject.PositionedBlocks.GetOccupiedCoordinates();
+
         /// <summary>Number of rope-slot transputs in the blueprint; hard cap on ropes for this station.</summary>
         public int RopeSlotCapacity { get; private set; }
 

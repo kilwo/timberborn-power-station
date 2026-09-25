@@ -15,6 +15,8 @@ namespace RopePower
             Bind<PowerTransferStationRegistry>().AsSingleton();
             Bind<RopeConnectionService>().AsSingleton();
             Bind<RopePowerConnector>().AsSingleton();
+            Bind<RopeBlockService>().AsSingleton();
+            Bind<RopeBlock>().AsTransient();
             MultiBind<IDevModule>().To<RopeLinkDevModule>().AsSingleton();
             MultiBind<TemplateModule>().ToProvider(ProvideTemplateModule).AsSingleton();
         }
@@ -23,6 +25,7 @@ namespace RopePower
         {
             TemplateModule.Builder builder = new TemplateModule.Builder();
             builder.AddDecorator<PowerTransferStationSpec, PowerTransferStation>();
+            builder.AddDecorator<RopeBlockSpec, RopeBlock>();
             return builder.Build();
         }
     }
