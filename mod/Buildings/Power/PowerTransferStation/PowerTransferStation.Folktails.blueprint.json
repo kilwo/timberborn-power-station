@@ -149,6 +149,13 @@
       0.0
     ]
   },
+  "PowerTransferStationSpec": {
+    "RopeAnchorPoint": {
+      "X": 0.5,
+      "Y": 2.85,
+      "Z": 0.5
+    }
+  },
   "Children": {
     "#Finished": {
       "Children": {

@@ -192,6 +192,29 @@ on each end, and trigger the rebuild.
 | `ReferenceSerializer.Of<T>() where T : BaseComponent` | WorldPersistence | Serializes entity references across saves (public, injectable). |
 | `EntityComponent.Deleted` | EntitySystem | Check before reconnecting a loaded partner. |
 
+Persistence details (checked while writing Phase 2):
+- `IObjectSaver.Set<T>(ListKey<T>, IReadOnlyCollection<T>, IValueSerializer<T>)` and
+  `IObjectLoader.Get<T>(ListKey<T>, IValueSerializer<T>)`. `PropertyKey<int>` works for plain values.
+  `IObjectLoader.Has(key)` and `IEntityLoader.TryGetComponent(key, out loader)` exist.
+- `ReferenceSerializer.Of<T>()` saves the partner's `EntityComponent.EntityId` (a Guid string) and
+  resolves it through `EntityRegistry` on load.
+- **Missing references are dropped silently:** `SaveConversions.DeconvertList` skips entries whose entity
+  or component can't be resolved. To warn about dropped links, `PowerTransferStation` also saves
+  `RopePartnerCount` and compares it on load.
+
+Global config specs:
+- `SpecService.Load` enumerates every blueprint from every asset provider, including mod files, and
+  indexes them by spec type. A mod blueprint such as `mod/Configurations/RopeConnectionService.blueprint.json`
+  containing `RopeConnectionServiceSpec` is therefore found by `ISpecService.GetSpecs<T>()`.
+- `GetSingleSpec<T>()` throws when there are zero matches (actually an NRE) or several. We use
+  `GetSpecs<T>().FirstOrDefault()` with built-in defaults instead.
+- Custom spec records (`record X : ComponentSpec` with `[Serialize] { get; init; }`) compile fine on
+  `netstandard2.1`, with no `IsExternalInit` polyfill needed.
+
+Dev menu:
+- Dev mode is toggled with **Alt+Shift+Z** (`KeyBindings/Dev/KeyBinding.ToggleDevMode`, unchangeable).
+- `IDevModule` methods appear in the dev panel while dev mode is on.
+
 Component wiring: in a `[Context("Game")]` `Configurator`, use
 `MultiBind<TemplateModule>().ToProvider(...)` with `TemplateModule.Builder.AddDecorator<TSpec, TComponent>()`.
 This attaches our component to any template with the spec. A custom `ComponentSpec` record with `[Serialize]`

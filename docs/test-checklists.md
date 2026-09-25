@@ -40,3 +40,42 @@ Use a **Folktails** game. Dev mode's instant build is fine for speed.
 
 Report: pass/fail for each step, a screenshot of steps 2 and 9 if anything looks off, and any relevant log
 lines.
+
+**Result (2026-09-25): passed** ("looks good").
+
+## Phase 2: persistent links (no UI, no power merge yet)
+
+Links are **data only** in this phase. They don't carry power yet (that's Phase 3), there's no rope
+visual, and no clearance or rope-block check. Everything is verified through `Player.log` lines starting
+with `[RopePower]`.
+
+Setup: a Folktails game. Turn on dev mode with **Alt+Shift+Z**. The dev panel lists these actions:
+`Rope Power: link two newest stations`, `… link newest station to all others`, `… unlink newest station`,
+and `… log all rope links`. "Newest" means most recently **finished**.
+
+1. **Load:** the log shows `[RopePower] loaded (max span 30, max ropes 3, max inclination 50)` and **not**
+   `RopeConnectionService blueprint not found`.
+2. **Link:** build station A, then station B about 10 blocks away. Run *link two newest* and the log
+   shows `linked station (…) <-> station (…) (span …)`.
+3. **Inspect:** *log all rope links* shows `2 station(s), 1 rope link(s)` and the pair.
+4. **Rejections:**
+   - Run *link two newest* again and you get `rejected: AlreadyLinked`.
+   - Build C more than 30 blocks from B, then run *link two newest*. You get `rejected: TooLong`.
+   - Optional: build a station very close to another but much higher (e.g. on a cliff 4+ blocks up,
+     1 block away). *link two newest* gives `rejected: TooSteep`.
+5. **Max ropes:** build 4 more stations within 30 blocks of each other, all finishing after A and B.
+   Run *link newest station to all others*. The newest one links to 3 and then logs `rejected: SourceFull`.
+6. **Save/load:** save and reload.
+   - Each link shows exactly **one** `restored link … <-> …` line.
+   - *log all rope links* shows the same pairs as before saving.
+   - There are no `dropped` warnings.
+7. **Demolish:** demolish one linked station. The log shows `unlinked …` for each of its links, and
+   *log all rope links* no longer lists them. Save, reload: nothing about it is restored and there are no
+   warnings.
+8. **Unlink:** run *unlink newest station* and the newest station's links are removed (`unlinked …`).
+9. **District (optional, needs two districts):** put station X beside a road of district 1 and station Y
+   beside a road of district 2, within 30 blocks. *link two newest* gives `rejected: DifferentDistricts`.
+   A station with no road next to it links to either.
+10. **Log:** no exceptions mentioning `RopePower` or `PowerTransferStation`.
+
+Report: pass/fail for each step, plus the `[RopePower]` lines from steps 6 and 7.

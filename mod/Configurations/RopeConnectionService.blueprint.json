@@ -1,0 +1,7 @@
+{
+  "RopeConnectionServiceSpec": {
+    "MaxRopeSpan": 30,
+    "MaxRopesPerStation": 3,
+    "MaxInclination": 50
+  }
+}
