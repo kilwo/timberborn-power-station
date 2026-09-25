@@ -1,7 +1,9 @@
 using Bindito.Core;
+using RopePower.Rendering;
 using RopePower.Ropes;
 using RopePower.Stations;
-using Timberborn.Debugging;
+using RopePower.UI;
+using Timberborn.EntityPanelSystem;
 using Timberborn.TemplateInstantiation;
 
 namespace RopePower
@@ -9,6 +11,23 @@ namespace RopePower
     [Context("Game")]
     public class RopePowerConfigurator : Configurator
     {
+        private class EntityPanelModuleProvider : IProvider<EntityPanelModule>
+        {
+            private readonly StationRopesFragment _stationRopesFragment;
+
+            public EntityPanelModuleProvider(StationRopesFragment stationRopesFragment)
+            {
+                _stationRopesFragment = stationRopesFragment;
+            }
+
+            public EntityPanelModule Get()
+            {
+                EntityPanelModule.Builder builder = new EntityPanelModule.Builder();
+                builder.AddMiddleFragment(_stationRopesFragment);
+                return builder.Build();
+            }
+        }
+
         protected override void Configure()
         {
             Bind<PowerTransferStation>().AsTransient();
@@ -17,7 +36,13 @@ namespace RopePower
             Bind<RopePowerConnector>().AsSingleton();
             Bind<RopeBlockService>().AsSingleton();
             Bind<RopeBlock>().AsTransient();
-            MultiBind<IDevModule>().To<RopeLinkDevModule>().AsSingleton();
+            Bind<RopeRenderer>().AsSingleton();
+            Bind<RopePreviewTooltip>().AsSingleton();
+            Bind<RopePreviewRenderer>().AsSingleton();
+            Bind<RopeConnectionAddingTool>().AsSingleton();
+            Bind<RopeConnectionButtonFactory>().AsSingleton();
+            Bind<StationRopesFragment>().AsSingleton();
+            MultiBind<EntityPanelModule>().ToProvider<EntityPanelModuleProvider>().AsSingleton();
             MultiBind<TemplateModule>().ToProvider(ProvideTemplateModule).AsSingleton();
         }
 

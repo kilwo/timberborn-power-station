@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace RopePower.Stations
@@ -9,6 +10,8 @@ namespace RopePower.Stations
         private readonly List<PowerTransferStation> _finishedOrder = new List<PowerTransferStation>();
 
         public IReadOnlyList<PowerTransferStation> Stations => _stations;
+
+        public event Action<PowerTransferStation> StationFinished;
 
         public void Add(PowerTransferStation station)
         {
@@ -25,6 +28,7 @@ namespace RopePower.Stations
         {
             _finishedOrder.Remove(station);
             _finishedOrder.Add(station);
+            StationFinished?.Invoke(station);
         }
 
         /// <summary>Most recently finished station first.</summary>
