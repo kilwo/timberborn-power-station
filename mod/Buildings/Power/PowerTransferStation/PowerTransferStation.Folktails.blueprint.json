@@ -142,7 +142,7 @@
     "DisplayNameLocKey": "Building.PowerTransferStation.DisplayName",
     "DescriptionLocKey": "Building.PowerTransferStation.Description",
     "FlavorDescriptionLocKey": "Building.PowerTransferStation.FlavorDescription",
-    "Icon": "Buildings/Power/Clutch/ClutchIcon"
+    "Icon": "Buildings/Power/PowerTransferStation/PowerTransferStationIcon"
   },
   "ConstructionSiteProgressVisualizerSpec": {
     "ProgressThresholds": [
@@ -168,14 +168,9 @@
   "Children": {
     "#Finished": {
       "Children": {
-        "PlaceholderBase": {
+        "Model": {
           "TimbermeshSpec": {
-            "Model": "Buildings/Power/Clutch/ClutchEngaged.Folktails.Model"
-          }
-        },
-        "PlaceholderTower": {
-          "TimbermeshSpec": {
-            "Model": "Buildings/Paths/ZiplinePylon/ZiplinePylon.Folktails.Model"
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.Model"
           }
         }
       },
@@ -184,25 +179,37 @@
           {
             "Center": {
               "X": 0.5,
-              "Y": 0.33,
+              "Y": 0.4,
               "Z": 0.5
             },
             "Size": {
               "X": 1.0,
-              "Y": 0.66,
+              "Y": 0.8,
               "Z": 1.0
             }
           },
           {
             "Center": {
               "X": 0.5,
-              "Y": 1.83,
+              "Y": 1.75,
               "Z": 0.5
             },
             "Size": {
-              "X": 0.3,
-              "Y": 2.34,
-              "Z": 0.3
+              "X": 0.5,
+              "Y": 1.9,
+              "Z": 0.5
+            }
+          },
+          {
+            "Center": {
+              "X": 0.5,
+              "Y": 2.85,
+              "Z": 0.5
+            },
+            "Size": {
+              "X": 0.43,
+              "Y": 0.2,
+              "Z": 0.43
             }
           }
         ],
