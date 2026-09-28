@@ -352,3 +352,14 @@ rule vanilla shafts use (`docs/game-api-notes.md` §10).
 
 If a stub is consistently wrong in one situation, note the shaft shape next to it (straight, corner, T or cross) and
 which side of the station it's on, with a screenshot.
+
+## Science unlock (2026-09-28)
+
+The station now costs **600 science** to unlock (`BuildingSpec.ScienceCost`, compared with 400 for the Clutch and
+Gravity Battery).
+
+1. In a new game, or a save where it isn't unlocked, the station's Power toolbar button shows as locked with a
+   600 science cost, and it can't be placed until unlocked.
+2. With 600 or more science, unlocking it deducts 600 and the building can then be placed.
+3. Older test saves: the station may now show as locked (unlocks are saved per building). Already-built stations
+   and their cables keep working. Unlock it (or use dev mode) to build more.
