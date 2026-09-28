@@ -285,3 +285,33 @@ Phase 4 results are still to come. You can test both in one run.
    - a rope to an unfinished station is grey, and turns normal colour when construction finishes
 8. **Performance:** with about 10 ropes there's no noticeable frame drop.
 9. **Log:** no `[RopePower]` errors and no `RopeRenderer blueprint not found` warning.
+
+## Phase 5b: real station model
+
+The placeholder Clutch and pylon are replaced by the generated model (`docs/station-model-spec.md`). You can
+run this together with the Phase 4 and 5a lists.
+
+1. **Loads:** the Power tab shows the new icon (a wooden trestle tower). The log has no
+   `Material ... not found in repository` or `Incorrect Zlib compression file header` errors.
+2. **Looks:** a built station is a plank deck and gearbox, square shaft stubs on all four sides, a slender
+   trestle, and a wooden pulley with yellow straps on top. Nothing sticks out of its 1×1 tile.
+3. **Shaft line-up:** put shafts against each of the four sides. Their axles meet the station's stubs at the
+   same height and size, with no visible step or gap. Take a screenshot.
+4. **Rope fit:** linked ropes enter the pulley's groove from both sides, between the two wooden rims, instead of
+   meeting the pole below it (the Phase 4/5a misalignment should be gone). Check:
+   - short and long ropes, in several directions, including diagonals
+   - ropes to a higher and a lower station
+   - a station with 3 ropes
+5. **Spin when powered:** with power flowing, the pulley (and its yellow straps), the vertical drive shaft and
+   the four stubs turn. The pulley's rim should move **the same way as the rope texture**, with rope running
+   into the groove on one side and out on the other. If the rope and pulley visibly disagree, report it and I'll
+   flip one sign.
+6. **Still when unpowered:** stop the generator or unlink. Everything stops, and the stubs don't turn either.
+   Slow power (a weak generator, efficiency < 100 %) turns it more slowly.
+7. **Construction:** a placed but unbuilt station still shows the vanilla Clutch scaffold (expected for now),
+   then switches to the new model when finished.
+8. **Selection and highlight:** clicking the tower or pulley selects the station. The hover highlight outlines
+   the whole model.
+9. **Level slider:** lowering the slider through the station's height cuts the model like other buildings.
+
+Report: pass/fail for each step, screenshots for steps 2, 3, 4 and 5, and Player.log.
