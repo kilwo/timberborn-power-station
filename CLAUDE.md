@@ -121,6 +121,7 @@ power-station/
     Patches/                    # Harmony patches only
     UI/                         # panel fragment, connection tool
     Rendering/                  # rope mesh / animation
+  tools/TimbermeshGen/          # offline model generator/inspector (.timbermesh), Blender preview script
   decompiled/                   # gitignored reference only
 ```
 

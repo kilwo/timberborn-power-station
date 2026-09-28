@@ -341,3 +341,57 @@ check, and the inclination limit (50°).
   (2026-09-25, rope crossing a zipline). Vanilla `GetBlockingObjects` filters on `IBlockObjectModel`, and we
   filter on both.
 
+
+---
+
+## 9. Timbermesh model format (checked 1.1.2.4, used by `tools/TimbermeshGen`)
+
+**Reading.** `Timberborn.Timbermesh.TimbermeshReader.ReadFromStream` checks for a zlib header (`0x78 0x9C`), then
+inflates raw deflate and runs protobuf-net `Serializer.Deserialize<Model>`. The Adler-32 trailer is ignored.
+`TimbermeshImporter` creates one GameObject per `Node`, parents them by index (`Parent < 0` goes to the root),
+and sets `localPosition/Rotation/Scale` straight from the node. There's no axis conversion, so files are in
+**Unity space** (Y up, left-handed).
+
+**DTO (`Timberborn.TimbermeshDTO.dll`, all `[ProtoContract]`, get-only properties):**
+- `Model`: 1 `Version` int, 2 `Name`, 3 `Node[] Nodes`
+- `Node`: 1 `Parent` int, 2 `Name`, 3 `Position` V3, 4 `Rotation` Q, 5 `Scale` V3, 6 `VertexCount`,
+  7 `VertexProperties`, 8 `Meshes`, 9 `VertexAnimations`, 10 `NodeAnimations`
+- `Mesh`: 1 `Indices` (int list, triangles), 2 `Material` (name)
+- `VertexProperty`: 1 `Name`, 2 `ScalarType` (enum, Float = 4), 3 `ScalarTypeDimension`, 4 `Data` (bytes,
+  little-endian floats)
+- `NodeAnimation`: 1 `Name`, 2 `Framerate`, 3 `Frames` (1 `Position`, 2 `Rotation`, 3 `Scale`). All three
+  frame fields are dereferenced (`NodeAnimationCache`), so a null throws.
+
+**Meshes (`StaticMeshBuilder`).** It reads the vertex properties `position`, `normal` (float3), `tangent`,
+`color` (float4) and `uv0..uv2` (float2). Each `Mesh` is one submesh, and its material comes from
+`IMaterialRepository.GetMaterial(name)`. Vanilla building meshes carry position, normal, tangent, color and uv0.
+Checked against vanilla models, the front face is where `cross(b - a, c - a)` points along the normal.
+
+**Materials (`Timberborn.TimbermeshMaterials.MaterialRepository`).** Materials are keyed by Unity material
+name and loaded from `MaterialCollectionSpec` blueprints (`Blueprints/MaterialCollections/*`, Common plus the
+faction collection). Folktails building materials are UberAtlas textures: `BaseWood_Brown/LightBrown/White/Yellow.Folktails`,
+`BaseMetal.Folktails`, `PaintedMetal.Folktails` (yellow/black stripes), `IrregularPlanks_*`, `Details`,
+`WindowsAtlas`, and so on. An unknown name **throws**. Vertex colour multiplies albedo (as in the
+`EnvironmentURP` graph), so vanilla uses 1 for plain parts. The atlas layouts are in the example textures
+packed in `StreamingAssets/Modding/TimberbornExampleModels.blend`; see `tools/TimbermeshGen/Models/Atlas.cs`.
+
+**Animation.** `AnimationInitializer` (an `IModelPostprocessor`) adds a `NodeAnimationUpdater` to each animated
+node and one `TimbermeshAnimator` to the model root, which plays the **first** animation looped on Awake.
+Looping interpolates frame i → i+1 and last → first with `Quaternion.Lerp`. Vanilla frames contain quaternion
+sign flips mid-loop (the clutch after frame 72, the pylon after 299 and 899) and play smoothly, so interpolation
+takes the shortest path. `MechanicalNodeAnimator` (added by `MechanicalNodeAnimatorSpec`) enables the animator
+when `CanAnimate()`: for an **intermediary** (not shaft, generator or consumer, which is our station) that means
+`ActiveAndPowered && Powered`. Speed is `(PowerEfficiency + MinSpeedMultiplier) / (1 + MinSpeedMultiplier)` ×
+nonlinear game speed.
+
+**Vanilla measurements** (models are `BinaryData` MonoBehaviours in `resources.assets`, extracted locally to
+measure and never committed):
+- Shaft axle: centre height **0.5**, square **0.22** (0.39–0.61), running face to face along the block.
+  The clutch's static axle and the PowerMeter's axle end caps both show this.
+- The clutch spins its part one turn per 100 frames at 24 fps (4.17 s). The zipline pylon wheel is at y 3.85,
+  radius 0.44, one turn per 10 s.
+- Vanilla animation names are `Default`. Animated nodes are named `#...` (the name has no runtime effect).
+- Zipline cable (`ZiplineCable.Model`): a 0.036 square rod from z −0.5 to 0.5 with UV v running 1 → 0 along +z.
+  The `ZiplineCable` shader samples `v·_Length·_Density + _NonlinearTime·_IsOperative·_Speed`, and the
+  material has `_Density` 5.5 and `_Speed` 1.5. So the texture drifts towards each piece's far end at
+  **0.273 blocks/s**.

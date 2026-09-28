@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Offline tool: generates and inspects .timbermesh files. Not part of the mod. Game DLLs are
+       referenced from the install folder and only land in this tool's gitignored bin/. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="protobuf-net" HintPath="$(TimberbornManaged)protobuf-net.dll" />
+    <Reference Include="protobuf-net.Core" HintPath="$(TimberbornManaged)protobuf-net.Core.dll" />
+    <Reference Include="Timberborn.TimbermeshDTO" HintPath="$(TimberbornManaged)Timberborn.TimbermeshDTO.dll" />
+  </ItemGroup>
+</Project>

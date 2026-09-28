@@ -1,0 +1,3 @@
+# Compressed models and images: never line-ending convert.
+*.timbermesh binary
+*.png binary
