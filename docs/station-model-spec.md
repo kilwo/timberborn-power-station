@@ -31,7 +31,7 @@ The toolbar icon `PowerTransferStationIcon.png` is the `icon` render.
 |---|---|---|---|
 | `PowerTransferStation.Folktails.Model` | (0, 0, 0) | Plank deck, gearbox housing and lid, metal band and bearing collars, four-post tapered trestle with rungs and braces, top platform | none |
 | `#Pulley` | (0.5, 2.85, 0.5) | Wooden wheel with a metal-lined groove, octagonal hub, four yellow straps on top, drive shaft down to the lid | one turn about +Y, angle decreasing |
-| `#AxleX`, `#AxleZ` | (0.5, 0.5, 0.5) | 0.22 square axles face to face (the stubs on all four sides), metal bands | one turn about their axis |
+| `#StubPositiveX`, `#StubNegativeZ`, `#StubNegativeX`, `#StubPositiveZ` | (0.5, 0.5, 0.5) | One 0.22 square input stub each, from inside the housing to its block face, with a metal band | one turn about its own **outward** axis, the same sign for all four, so every input looks like it turns the same way from outside (`StubDirection` flips all four) |
 
 Every animation is `Default`, 96 frames at 24 fps (4 s per turn). The pulley rim (r 0.175) then moves at
 0.275 blocks/s, which matches the cable texture's 0.273 blocks/s. The spin direction matches the cable's

@@ -97,6 +97,14 @@ static void Info(string path)
             Console.WriteLine($"   anim '{a.Name}' {a.Frames.Count} frames @ {a.Framerate} fps ({a.Length:0.##} s), " +
                               $"angle vs frame 0: {string.Join(" ", angles)}; dot(last, first)={wrapDot:0.###}; " +
                               $"sign flips after frames [{string.Join(",", flips)}]");
+            // Rotation axis from frame 0 to frame 1 (direction of spin, right-hand rule on the quaternion).
+            if (a.Frames.Count > 1)
+            {
+                QuaternionFloat f0 = a.Frames[0].Rotation, f1 = a.Frames[1].Rotation;
+                Quaternion step = new Quaternion(f1.X, f1.Y, f1.Z, f1.W) * Quaternion.Inverse(new Quaternion(f0.X, f0.Y, f0.Z, f0.W));
+                Vector3 axis = Vector3.Normalize(new Vector3(step.X, step.Y, step.Z) * MathF.Sign(step.W == 0 ? 1 : step.W));
+                Console.WriteLine($"   spin axis per frame: ({axis.X:0.##},{axis.Y:0.##},{axis.Z:0.##})");
+            }
         }
     }
 }

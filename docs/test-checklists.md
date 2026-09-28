@@ -303,8 +303,10 @@ run this together with the Phase 4 and 5a lists.
    - cables to a higher and a lower station
    - a station with 3 cables
 5. **Spin when powered:** with power flowing, the pulley (and its yellow straps), the vertical drive shaft and
-   the four stubs turn. The pulley's rim should move **the same way as the cable texture**, with cable running
-   into the groove on one side and out on the other. If the cable and pulley visibly disagree, report it and I'll
+   the four stubs turn. Looking at each side from outside, **all four stubs turn the same way**, for example all
+   clockwise. If you'd rather they all turned the other way, it's one constant (`StubDirection`).
+   The pulley's rim should move **the same way as the cable texture**, with cable running into the groove on one
+   side and out on the other. If the cable and pulley visibly disagree, report it and I'll
    flip one sign.
 6. **Still when unpowered:** stop the generator or unlink. Everything stops, and the stubs don't turn either.
    Slow power (a weak generator, efficiency < 100 %) turns it more slowly.

@@ -25,6 +25,9 @@ namespace TimbermeshGen.Models
         private const int Frames = 96;
         private const float Framerate = 24f;
 
+        // Sign of the input stubs' rotation about their outward axes (the same for all four). Flip to reverse them all.
+        private const float StubDirection = 1f;
+
         private const float DeckTop = 0.09f;
         private const float HousingHalf = 0.21f;
         private const float HousingTop = 0.74f;
@@ -46,13 +49,20 @@ namespace TimbermeshGen.Models
             TmNode pulley = AnimatedNode("#Pulley", PulleyCentre, Vector3.UnitY, -1f);
             BuildPulley().WriteTo(pulley);
 
-            TmNode axleX = AnimatedNode("#AxleX", AxleCentre, Vector3.UnitX, 1f);
-            BuildAxle(Matrix4x4.Identity).WriteTo(axleX);
+            List<TmNode> nodes = new List<TmNode> { root, pulley };
+            // One node per input stub, each turning the same way about its own outward axis, so all four look the
+            // same from outside the building (as if driven off one central bevel gear).
+            string[] names = { "#StubPositiveX", "#StubNegativeZ", "#StubNegativeX", "#StubPositiveZ" };
+            for (int i = 0; i < 4; i++)
+            {
+                Matrix4x4 orientation = Matrix4x4.CreateRotationY(i * MathF.PI / 2);
+                Vector3 outward = Vector3.Transform(Vector3.UnitX, orientation);
+                TmNode stub = AnimatedNode(names[i], AxleCentre, outward, StubDirection);
+                BuildStub(orientation).WriteTo(stub);
+                nodes.Add(stub);
+            }
 
-            TmNode axleZ = AnimatedNode("#AxleZ", AxleCentre, Vector3.UnitZ, 1f);
-            BuildAxle(Matrix4x4.CreateRotationY(MathF.PI / 2)).WriteTo(axleZ);
-
-            return new TmModel { Name = "", Nodes = new[] { root, pulley, axleX, axleZ } };
+            return new TmModel { Name = "", Nodes = nodes.ToArray() };
         }
 
         private static MeshBuilder BuildStatic()
@@ -175,18 +185,18 @@ namespace TimbermeshGen.Models
             return mesh;
         }
 
-        /// <summary>A face-to-face axle along local X (0.22 square), with metal bands on the visible stubs.</summary>
-        private static MeshBuilder BuildAxle(Matrix4x4 orientation)
+        /// <summary>
+        /// One input stub along local +X (0.22 square) from just inside the housing to the block face, with a metal
+        /// band, in the stub node's frame (origin at the axle centre).
+        /// </summary>
+        private static MeshBuilder BuildStub(Matrix4x4 orientation)
         {
-            MeshBuilder axle = new MeshBuilder();
-            axle.Box(White, new Vector3(-0.5f, -AxleHalf, -AxleHalf), new Vector3(0.5f, AxleHalf, AxleHalf), f => LongPlank(f + 1));
+            MeshBuilder stub = new MeshBuilder();
+            stub.Box(White, new Vector3(HousingHalf - 0.03f, -AxleHalf, -AxleHalf), new Vector3(0.5f, AxleHalf, AxleHalf), f => LongPlank(f + 1));
             const float band = AxleHalf + 0.012f;
-            foreach (float x in new[] { -0.4f, 0.4f })
-            {
-                axle.Box(Metal, new Vector3(x - 0.02f, -band, -band), new Vector3(x + 0.02f, band, band), _ => MetalSlice);
-            }
+            stub.Box(Metal, new Vector3(0.38f, -band, -band), new Vector3(0.42f, band, band), _ => MetalSlice);
             MeshBuilder oriented = new MeshBuilder();
-            oriented.Append(axle, orientation);
+            oriented.Append(stub, orientation);
             return oriented;
         }
 
