@@ -7,7 +7,7 @@ using TimbermeshGen.Models;
 using TimbermeshGen.Timbermesh;
 using Timberborn.TimbermeshDTO;
 
-// Offline tool for the Rope Power mod's models. Reads with the game's own DTO (Timberborn.TimbermeshDTO + the game's
+// Offline tool for the Cable Power Transfer mod's models. Reads with the game's own DTO (Timberborn.TimbermeshDTO + the game's
 // protobuf-net), so anything it writes is checked against exactly what the game will parse.
 //
 //   station <out.timbermesh>                 build the Power Transfer Station model and verify it

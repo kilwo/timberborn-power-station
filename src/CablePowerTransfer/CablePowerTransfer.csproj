@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>CablePowerTransfer</AssemblyName>
+    <RootNamespace>CablePowerTransfer</RootNamespace>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(TimberbornManaged)Timberborn.*.dll" Private="false" />
+    <Reference Include="$(TimberbornManaged)Bindito.*.dll" Private="false" />
+    <Reference Include="$(TimberbornManaged)UnityEngine*.dll" Private="false" />
+    <Reference Include="$(TimberbornManaged)System.Collections.Immutable.dll" Private="false" />
+    <!-- Provided at runtime by the Workshop "Harmony" mod (manifest RequiredMods). Never deploy a copy:
+         the game Assembly.Load()s every DLL in every mod folder. -->
+    <Reference Include="$(HarmonyDir)\0Harmony.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- Deploy the manifest, data and DLL to the game's Mods folder. -->
+  <Target Name="DeployMod" AfterTargets="Build" Condition="'$(DeployMod)' != 'false'">
+    <PropertyGroup>
+      <ModSource>$(MSBuildThisFileDirectory)..\..\mod\</ModSource>
+      <ModTarget>$(ModsDir)\CablePowerTransfer\</ModTarget>
+    </PropertyGroup>
+    <ItemGroup>
+      <ModFiles Include="$(ModSource)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModFiles)" DestinationFiles="@(ModFiles->'$(ModTarget)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutDir)CablePowerTransfer.dll" DestinationFolder="$(ModTarget)" />
+    <Message Importance="high" Text="CablePowerTransfer deployed to $(ModTarget)" />
+  </Target>
+
+</Project>

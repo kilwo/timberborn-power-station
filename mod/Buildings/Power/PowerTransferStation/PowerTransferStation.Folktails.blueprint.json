@@ -150,12 +150,12 @@
     ]
   },
   "PowerTransferStationSpec": {
-    "RopeAnchorPoint": {
+    "CableAnchorPoint": {
       "X": 0.5,
       "Y": 2.85,
       "Z": 0.5
     },
-    "RopeSlotCoordinates": {
+    "CableSlotCoordinates": {
       "X": 0,
       "Y": 0,
       "Z": 2

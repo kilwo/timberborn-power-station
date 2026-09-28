@@ -7,14 +7,14 @@ namespace TimbermeshGen.Models
 {
     /// <summary>
     /// The Folktails Power Transfer Station: a gearbox base with shaft stubs on all four sides, a slender wooden
-    /// trestle, and a horizontal rope pulley on top. Unity model space: the 1x1x3 footprint spans X/Z 0..1, Y 0..3,
+    /// trestle, and a horizontal cable pulley on top. Unity model space: the 1x1x3 footprint spans X/Z 0..1, Y 0..3,
     /// origin at the block corner. See docs/station-model-spec.md.
     /// </summary>
     public static class PowerTransferStationModel
     {
-        // Must match PowerTransferStationSpec in the blueprint (RopeAnchorPoint, PulleyRadius).
+        // Must match PowerTransferStationSpec in the blueprint (CableAnchorPoint, PulleyRadius).
         public static readonly Vector3 PulleyCentre = new Vector3(0.5f, 2.85f, 0.5f);
-        public const float RopeRadius = 0.175f;
+        public const float CableRadius = 0.175f;
 
         // Vanilla shaft axle: centre height 0.5, 0.22 square, face to face (measured from ClutchEngaged/PowerMeter).
         private static readonly Vector3 AxleCentre = new Vector3(0.5f, 0.5f, 0.5f);
@@ -140,8 +140,8 @@ namespace TimbermeshGen.Models
         {
             MeshBuilder mesh = new MeshBuilder();
 
-            // Wheel profile, counter-clockwise around the cross-section: bottom face, lower rim, V groove (rope centre
-            // at r = 0.175, rope radius ~0.018), upper rim, top face.
+            // Wheel profile, counter-clockwise around the cross-section: bottom face, lower rim, V groove (cable centre
+            // at r = 0.175, cable radius ~0.018), upper rim, top face.
             Vector2[] wheel =
             {
                 new Vector2(0.05f, -0.06f), new Vector2(0.215f, -0.06f), new Vector2(0.215f, -0.03f), new Vector2(0.158f, -0.008f),
@@ -195,8 +195,8 @@ namespace TimbermeshGen.Models
             TmNode node = new TmNode { Name = name, Parent = 0, Position = TmVector3.From(pivot) };
             TmNodeAnimation animation = new TmNodeAnimation { Name = "Default", Framerate = Framerate };
             // One full turn per loop; direction +1/-1 is the sign of the angle about the axis. The pulley uses -1:
-            // with RopeCableModel's strands (side = Cross(up, towardsPartner)) and the cable shader scrolling towards
-            // each piece's far end, rope leaves every station on +side and arrives on -side, so the rim moves that way.
+            // with CableLoopModel's strands (side = Cross(up, towardsPartner)) and the cable shader scrolling towards
+            // each piece's far end, cable leaves every station on +side and arrives on -side, so the rim moves that way.
             for (int i = 0; i < Frames; i++)
             {
                 float angle = direction * 2 * MathF.PI * i / Frames;

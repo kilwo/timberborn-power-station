@@ -14,8 +14,8 @@ listed below has its access level noted.
 **Hook:** a Harmony **postfix on `TransputMap.GetFacingTransput(Transput)`** (public class, public method,
 `Timberborn.MechanicalSystem.dll`).
 
-- If the queried transput is one of a station's **rope-slot transputs** and that slot is assigned to a rope
-  link, return the partner station's paired rope-slot transput. In every other case, leave `__result` alone.
+- If the queried transput is one of a station's **cable-slot transputs** and that slot is assigned to a cable
+  link, return the partner station's paired cable-slot transput. In every other case, leave `__result` alone.
 - The game's own `MechanicalGraphManager.AddNode` then does the rest: it calls `Transput.Connect` on both
   ends and **joins the two graphs** with `MechanicalGraphFactory.Join`. Because the connection is a real
   transput connection, `MechanicalGraphReorganizer` follows it whenever *any* node is removed. Graph
@@ -25,9 +25,9 @@ listed below has its access level noted.
 link, call `SetDetached(true)` and then `SetDetached(false)` on one station's node:
 
 - `SetDetached(true)` runs `MechanicalGraphManager.RemoveNode`. This disconnects **all** of the node's
-  transputs, rope slots included, and reorganizes the old graph.
+  transputs, cable slots included, and reorganizes the old graph.
 - `SetDetached(false)` runs `MechanicalGraphManager.AddNode`. This re-queries `GetFacingTransput` for every
-  transput, so our postfix reconnects the ropes that still exist and joins the graphs.
+  transput, so our postfix reconnects the cables that still exist and joins the graphs.
 
 The game uses this same public method for the Clutch (`Timberborn.PowerManagement.Clutch`), so it is a
 supported path. Our station is not a clutch, so nothing else toggles its detached state.
@@ -35,12 +35,12 @@ supported path. Our station is not a clutch, so nothing else toggles its detache
 This is a single, small, isolated patch on a public method, and all merge/split logic stays vanilla.
 Plan B (paired generator/consumer) should not be needed. Phase 3 still has to verify this in-game.
 
-### Rope-slot transputs (how the station exposes them)
+### Cable-slot transputs (how the station exposes them)
 
-A `MechanicalNode` builds its `Transputs` array from `TransputProviderSpec` in the blueprint, so the rope
+A `MechanicalNode` builds its `Transputs` array from `TransputProviderSpec` in the blueprint, so the cable
 slots are ordinary blueprint transputs:
 
-- Use K extra `TransputSpec` entries (K = hard cap on ropes per station, e.g. 3). Each has a single
+- Use K extra `TransputSpec` entries (K = hard cap on cables per station, e.g. 3). Each has a single
   direction and a coordinate **inside the station's own tower**, facing **another block of the station
   itself**, e.g. `Coordinates (0,0,2)`, `Directions "Bottom"`, with target `(0,0,1)`.
 - Because the target block is occupied by the station, no other building can ever have a transput there
@@ -48,7 +48,7 @@ slots are ordinary blueprint transputs:
   inert until our postfix pairs them.
 - Don't add `MechanicalConnectorTargetSpec` to the station, or the game would try to show shaft connector
   stubs on horizontal and top transputs.
-- The max-ropes setting must be ≤ K (the slot count in the blueprint). Raising K later is a
+- The max-cables setting must be ≤ K (the slot count in the blueprint). Raising K later is a
   blueprint-only change.
 - Cosmetic: `MechanicalNodeSelfMarkerDrawer` draws a marker for every transput while the building is
   selected or previewed, so the slots get markers inside the tower. This is probably hidden by the model;
@@ -57,19 +57,19 @@ slots are ordinary blueprint transputs:
 **Implemented in Phase 3:**
 - `Patches/TransputMapGetFacingTransputPatch.cs`: a postfix that runs only when vanilla returned null and
   the transput's `BaseDirection == Bottom`.
-- `PowerTransferStation.GetRopePartnerTransput` / `RefreshPowerConnections`: slots are identified by
-  `Transput.Offset == spec.RopeSlotCoordinates` and `BaseDirection == Bottom`, in `MechanicalNode.Transputs`
+- `PowerTransferStation.GetCablePartnerTransput` / `RefreshPowerConnections`: slots are identified by
+  `Transput.Offset == spec.CableSlotCoordinates` and `BaseDirection == Bottom`, in `MechanicalNode.Transputs`
   order.
-- `RopePowerConnector`: refreshes both ends on `LinksChanged`. It skips a station that is being deleted,
+- `CablePowerConnector`: refreshes both ends on `LinksChanged`. It skips a station that is being deleted,
   not yet enabled (not finished or still loading), or detached.
-- Harmony is applied in `RopePowerModStarter` (an `IModStarter`), and the manifest has
+- Harmony is applied in `CablePowerTransferModStarter` (an `IModStarter`), and the manifest has
   `"RequiredMods": [{"Id": "Harmony"}]`, the format used by Workshop mods and parsed by
   `Timberborn.Modding.ManifestLoader` (optional `MinimumVersion`).
 - `ModCodeStarter` calls `Assembly.Load(bytes)` on **every** `*.dll` under a mod folder, so we must never
   deploy `0Harmony.dll` ourselves.
 
 Load order observed in Phase 2: `PostInitializeEntity` (links restored) runs before `OnEnterFinishedState`
-(the node joins its graph), so ropes connect on load with no refresh.
+(the node joins its graph), so cables connect on load with no refresh.
 
 Slot assignment doesn't need to be persisted. On load we restore the link list, give each link a free slot
 on each end, and trigger the rebuild.
@@ -84,7 +84,7 @@ on each end, and trigger the rebuild.
 | `Transput` | public | `ParentNode`, `ConnectedTransput`, `ConnectedNode`, `Connected`, `Coordinates`, `Direction`, `Target` (= coords + direction), `IsFinished`, `Connect(Transput)` / `Disconnect()` (public), `Faces(Transput)` (adjacency + opposite direction), `ReversedRotation`, `RotationMatches`. A transput holds **one** connection. Public ctor `(MechanicalNode, TransputSpec, Direction3D, BlockObject)`. |
 | `TransputMap` | public, `ILoadableSingleton` | 3D grid of transputs. `AddNode`, `RemoveNode`, **`GetFacingTransput(Transput)`**: returns the transput at `transput.Target` that `Faces` it, or null. Events `TransputAdded`, `TransputRemoved`. **This is the method we patch.** |
 | `MechanicalGraphManager` | internal | `AddNode(node)`: creates a 1-node graph; for each transput, if `GetFacingTransput` is non-null, finished and has a `Graph`, it connects both ends and collects graphs, then calls `Join`. `RemoveNode(node)`: disconnects all connected transputs, removes the node from its graph, calls `Reorganizer.Reorganize(graph)`. |
-| `MechanicalGraphReorganizer` | internal | Flood-fills the old graph's nodes via `node.Transputs.Select(t => t.ConnectedNode)` into new graphs. This is why rope connections survive unrelated rebuilds. |
+| `MechanicalGraphReorganizer` | internal | Flood-fills the old graph's nodes via `node.Transputs.Select(t => t.ConnectedNode)` into new graphs. This is why cable connections survive unrelated rebuilds. |
 | `MechanicalGraphFactory` | internal | `Create()`, `Join(IEnumerable<MechanicalGraph>)`: moves all nodes into a fresh graph. |
 | `MechanicalGraph` | public | `Nodes`, `Generators`, `Batteries`, `PowerSupply`, `PowerDemand`, `PowerSurplus`, `Powered`, `PowerEfficiency`, `BatteryCharge/Capacity`, `Valid`. `AddNode`/`RemoveNode` are internal. The graph doesn't check rotation, so a rotation mismatch never blocks power. |
 | `MechanicalGraphRegistry` | public | List of live graphs. Posts `MechanicalGraphCreatedEvent` / `MechanicalGraphRemovedEvent` when a graph becomes 1-node or empty. |
@@ -100,9 +100,9 @@ on each end, and trigger the rebuild.
 - `Timberborn.MechanicalSystemUI.MechanicalModel` is auto-decorated on every `MechanicalNode`. Its
   `UpdateModel()` is null-safe when there's no `IMechanicalModelUpdater`.
 - `Timberborn.ModularShafts.ModularShaftVariantFinder` looks at connected neighbours to pick shaft model
-  variants. It only applies to modular shafts, not to our station's rope slots.
+  variants. It only applies to modular shafts, not to our station's cable slots.
 - `Timberborn.AutomationBuildings.PowerMeter` calls `GetFacingTransput(Transputs[0])` for its own
-  transput. Our postfix leaves non-rope-slot transputs untouched.
+  transput. Our postfix leaves non-cable-slot transputs untouched.
 - `Timberborn.MechanicalConnectorSystem.*` only handles visual connector stubs. It only activates on
   buildings with `MechanicalConnectorTargetSpec`. It isn't a linking mechanism.
 - `Timberborn.PowerManagement.Clutch` calls `SetDetached(!IsEngaged)`. That's precedent for our rebuild
@@ -120,7 +120,7 @@ on each end, and trigger the rebuild.
   with `MechanicalNodeSpec {0,0,IsShaft:false}`, `TransputProviderSpec` with `"Left, Right"` and
   `IgnoreRotation: true`, and its own Timbermesh model.
 - Proposed station: Clutch-like, 1×1×3, base transputs `(0,0,0)` `"Down, Left, Up, Right"`,
-  `IgnoreRotation: true`, plus K rope slots as in §1.
+  `IgnoreRotation: true`, plus K cable slots as in §1.
 - Mod data layout follows `../seeder/mod`: `Buildings/<Group>/<Name>/<Name>.Folktails.blueprint.json` plus
   `.timbermesh` files beside it, and `TemplateCollections/TemplateCollection.Buildings.Folktails.blueprint.json`
   using `"Blueprints#append": [...]`. `.timbermesh` files load straight from the mod folder, with no Unity
@@ -217,12 +217,12 @@ Persistence details (checked while writing Phase 2):
   resolves it through `EntityRegistry` on load.
 - **Missing references are dropped silently:** `SaveConversions.DeconvertList` skips entries whose entity
   or component can't be resolved. To warn about dropped links, `PowerTransferStation` also saves
-  `RopePartnerCount` and compares it on load.
+  `CablePartnerCount` and compares it on load.
 
 Global config specs:
 - `SpecService.Load` enumerates every blueprint from every asset provider, including mod files, and
-  indexes them by spec type. A mod blueprint such as `mod/Configurations/RopeConnectionService.blueprint.json`
-  containing `RopeConnectionServiceSpec` is therefore found by `ISpecService.GetSpecs<T>()`.
+  indexes them by spec type. A mod blueprint such as `mod/Configurations/CableConnectionService.blueprint.json`
+  containing `CableConnectionServiceSpec` is therefore found by `ISpecService.GetSpecs<T>()`.
 - `GetSingleSpec<T>()` throws when there are zero matches (actually an NRE) or several. We use
   `GetSpecs<T>().FirstOrDefault()` with built-in defaults instead.
 - Custom spec records (`record X : ComponentSpec` with `[Serialize] { get; init; }`) compile fine on
@@ -256,7 +256,7 @@ properties (see `ShantySpeaker/FinishableBuildingSoundPlayerSpec`) makes it avai
   `ILoadableSingleton.Load()` runs on game load.
 - **Mod entry point:** `Timberborn.ModManagerScene.IModStarter.StartMod(IModEnvironment env)`. It's
   instantiated with `Activator.CreateInstance` at mod-manager time, and `env.ModPath` is the mod folder.
-  This is the place to call `new Harmony("Elum.RopePower").PatchAll()`.
+  This is the place to call `new Harmony("Elum.CablePowerTransfer").PatchAll()`.
 - **Harmony isn't shipped with the game.** Use the Workshop mod "Harmony" (`Id: "Harmony"`, v2.4.1,
   item 3284904751, `0Harmony.dll`). Add it to our manifest's `RequiredMods` and reference its DLL with
   `Private="false"` (`$(HarmonyDir)` in `Directory.Build.props`). The exact `RequiredMods` entry format
@@ -266,21 +266,21 @@ properties (see `ShantySpeaker/FinishableBuildingSoundPlayerSpec`) makes it avai
 
 ## 7. Design decisions and open questions
 
-**Decided (2026-09-25):** ropes copy zipline rules for clearance and blocks along the rope, the same-district
+**Decided (2026-09-25):** cables copy zipline rules for clearance and blocks along the cable, the same-district
 check, and the inclination limit (50°).
 
-### Rope blocks along the path
+### Cable blocks along the path
 
 - The vanilla block is `Models/ZiplineCable/ZiplineConnectionBlock.blueprint`: `BlockObjectSpec` 1×1×1,
   `MatterBelow: Any`, `Occupations: "Bottom, Top, Corners, Path, Middle"`, plus `CableBlockSpec`. It's
   created with `BlockObjectFactory.CreateAsPreview(spec, parent, new Placement(cell))` followed by
   `blockObject.MarkAsFinishedAndAddToServices()` (both public, `Timberborn.BlockSystem`).
 - **We can't reuse the vanilla block entity.** `ZiplineConnectionService.Disconnect` deletes a cell's block
-  whenever *its own* connection list has nothing left at that cell, so it would delete blocks a rope still
-  needs, and the reverse would happen too. We need our own `RopeBlock` blueprint: the same `BlockObjectSpec`
+  whenever *its own* connection list has nothing left at that cell, so it would delete blocks a cable still
+  needs, and the reverse would happen too. We need our own `PowerCableBlock` blueprint: the same `BlockObjectSpec`
   with our own marker spec instead of `CableBlockSpec`.
-- Consequence: ropes can share cells with other ropes, but vanilla zipline validation only accepts
-  `CableBlock` cells, so **a zipline can't cross a rope**. Whether a rope may cross a zipline is open
+- Consequence: cables can share cells with other cables, but vanilla zipline validation only accepts
+  `CableBlock` cells, so **a zipline can't cross a cable**. Whether a cable may cross a zipline is open
   (question B).
 
 ### District: open question A
@@ -304,8 +304,8 @@ check, and the inclination limit (50°).
 
 ### Crossings (decided)
 
-- **No crossings between ropes and ziplines.** They block each other like any other obstacle. Ropes may
-  share cells with other ropes: a cell holding our `RopeBlock` counts as clear for a new rope. No patching
+- **No crossings between cables and ziplines.** They block each other like any other obstacle. Cables may
+  share cells with other cables: a cell holding our `PowerCableBlock` counts as clear for a new cable. No patching
   is needed.
 
 ---
@@ -320,7 +320,7 @@ check, and the inclination limit (50°).
     distance and inclination rows.
 - **Localizing a reused view:** `LocalizableLabel` is localized once, inside `LoadVisualElement` (through
   `VisualElementInitializer` → `VisualElementLocalizer`). Setting `.text` afterwards sticks, which is how
-  the panel title becomes "Ropes:".
+  the panel title becomes "Cables:".
 - **Vanilla strings reused** (all generic): `Zipline.AddConnection`, `Zipline.RemoveConnection`,
   `Zipline.Distance`, `Zipline.Inclination`, `Zipline.DistanceWarning`, `Zipline.InclinationWarning`,
   `Zipline.BlockedWarning`, `Zipline.TooManyConnections`, `BuildingTools.DistrictsInConflict`.
@@ -331,14 +331,14 @@ check, and the inclination limit (50°).
   `TemplateInstantiator.Instantiate(blueprint, parent)`. The `Cable` component is decorated with
   `HighlightableObject`. Placement is copied from `ZiplineCableModel`. The shader floats are `_Length`
   and `_IsOperative`.
-- **Colours:** `ZiplineSystemColorsSpec` is internal, so the values are copied into `UI/RopeColors.cs`.
+- **Colours:** `ZiplineSystemColorsSpec` is internal, so the values are copied into `UI/CableColors.cs`.
 - **Entity panel registration:** `MultiBind<EntityPanelModule>().ToProvider<P>()` where
   `P : IProvider<EntityPanelModule>` builds with `EntityPanelModule.Builder.AddMiddleFragment(fragment)`.
 - **Highlighter gotcha:** `Highlighter.HighlightPrimary(target, color)` (and `RollingHighlighter`) look up the
   target's `HighlightableObject` and call into it **without a null check**. They also cache the null per
   GameObject. So only pass objects that have `HighlightableObject`. Invisible block entities such as zipline
-  `CableBlock`s don't have one, and passing them threw a NullReferenceException in the rope tool
-  (2026-09-25, rope crossing a zipline). Vanilla `GetBlockingObjects` filters on `IBlockObjectModel`, and we
+  `CableBlock`s don't have one, and passing them threw a NullReferenceException in the cable tool
+  (2026-09-25, cable crossing a zipline). Vanilla `GetBlockingObjects` filters on `IBlockObjectModel`, and we
   filter on both.
 
 

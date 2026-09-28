@@ -34,8 +34,8 @@ The toolbar icon `PowerTransferStationIcon.png` is the `icon` render.
 | `#AxleX`, `#AxleZ` | (0.5, 0.5, 0.5) | 0.22 square axles face to face (the stubs on all four sides), metal bands | one turn about their axis |
 
 Every animation is `Default`, 96 frames at 24 fps (4 s per turn). The pulley rim (r 0.175) then moves at
-0.275 blocks/s, which matches the rope texture's 0.273 blocks/s. The spin direction matches the rope's
-travel: rope leaves each station on `RopeCableModel`'s `+side` and arrives on `−side`.
+0.275 blocks/s, which matches the cable texture's 0.273 blocks/s. The spin direction matches the cable's
+travel: cable leaves each station on `CableLoopModel`'s `+side` and arrives on `−side`.
 `MechanicalNodeAnimatorSpec` runs the animation only while the station is powered.
 
 Materials: `BaseWood_Brown/LightBrown/White.Folktails`, `BaseMetal.Folktails`, `PaintedMetal.Folktails`, with
@@ -45,10 +45,10 @@ all vertex colours white. The model is about 2,000 vertices and 21 KB.
 - **Footprint** 1 × 1, 3 blocks tall. Everything stays inside X/Z 0–1, Y 0–3.
 - **Shaft stubs:** centre height **0.5**, square **0.22**, reaching the block faces on all four sides. These
   are the vanilla shaft axle dimensions, measured from the Clutch and Power Meter models.
-- **Pulley centre** (0.5, 2.85, 0.5) = blueprint `PowerTransferStationSpec.RopeAnchorPoint`. The rope groove sits
+- **Pulley centre** (0.5, 2.85, 0.5) = blueprint `PowerTransferStationSpec.CableAnchorPoint`. The cable groove sits
   at radius **0.175** = `PulleyRadius`, and strands attach there on either side of the wheel.
-- **Rope clearance:** nothing outside radius 0.15 of the tower axis above y 2.72, other than the wheel itself,
-  so ropes in any direction clear the tower top.
+- **Cable clearance:** nothing outside radius 0.15 of the tower axis above y 2.72, other than the wheel itself,
+  so cables in any direction clear the tower top.
 
 ## Replacing it with a hand-made model later
 A Blender model exported with the Timbermesh plugin can replace the generated file if it keeps the numbers above.

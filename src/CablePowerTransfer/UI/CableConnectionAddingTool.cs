@@ -1,0 +1,146 @@
+using System;
+using CablePowerTransfer.Cables;
+using CablePowerTransfer.Stations;
+using Timberborn.ConstructionMode;
+using Timberborn.InputSystem;
+using Timberborn.Localization;
+using Timberborn.SelectionSystem;
+using Timberborn.ToolSystem;
+using Timberborn.ToolSystemUI;
+using Timberborn.UISound;
+
+namespace CablePowerTransfer.UI
+{
+    /// <summary>
+    /// "Add cable" picking mode: hover a station to preview (green = valid, red + reason = invalid), click to link,
+    /// Esc cancels (ToolService handles InputService.Cancel). Mirrors Timberborn.ZiplineSystemUI.ZiplineConnectionAddingTool.
+    /// </summary>
+    public class CableConnectionAddingTool : ITool, IToolDescriptor, IInputProcessor, IConstructionModeEnabler
+    {
+        private static readonly string DescriptionLocKey = "CablePowerTransfer.PickDestination";
+        private static readonly string CursorKey = "PickObjectCursor";
+
+        private readonly InputService _inputService;
+        private readonly SelectableObjectRaycaster _selectableObjectRaycaster;
+        private readonly EntitySelectionService _entitySelectionService;
+        private readonly ToolService _toolService;
+        private readonly CableConnectionService _cableConnectionService;
+        private readonly CursorService _cursorService;
+        private readonly ILoc _loc;
+        private readonly CablePreviewRenderer _previewRenderer;
+        private readonly UISoundController _uiSoundController;
+        private readonly Highlighter _highlighter;
+
+        private PowerTransferStation _origin;
+
+        public CableConnectionAddingTool(InputService inputService, SelectableObjectRaycaster selectableObjectRaycaster,
+                                        EntitySelectionService entitySelectionService, ToolService toolService,
+                                        CableConnectionService cableConnectionService, CursorService cursorService, ILoc loc,
+                                        CablePreviewRenderer previewRenderer, UISoundController uiSoundController,
+                                        Highlighter highlighter)
+        {
+            _inputService = inputService;
+            _selectableObjectRaycaster = selectableObjectRaycaster;
+            _entitySelectionService = entitySelectionService;
+            _toolService = toolService;
+            _cableConnectionService = cableConnectionService;
+            _cursorService = cursorService;
+            _loc = loc;
+            _previewRenderer = previewRenderer;
+            _uiSoundController = uiSoundController;
+            _highlighter = highlighter;
+        }
+
+        public void SwitchTo(PowerTransferStation origin)
+        {
+            _origin = origin;
+        }
+
+        public void Enter()
+        {
+            if (!_origin)
+            {
+                ModLog.Warn("cable tool entered without an origin station");
+                return;
+            }
+            _highlighter.HighlightPrimary(_origin, CableColors.Origin);
+            _inputService.AddInputProcessor(this);
+            _cursorService.SetCursor(CursorKey);
+        }
+
+        public void Exit()
+        {
+            _previewRenderer.Hide();
+            _inputService.RemoveInputProcessor(this);
+            _cursorService.ResetCursor();
+            if (_origin)
+            {
+                _highlighter.UnhighlightPrimary(_origin);
+                if (!_origin.IsDeleted)
+                {
+                    _entitySelectionService.Select(_origin);
+                }
+            }
+            _origin = null;
+        }
+
+        public ToolDescription DescribeTool()
+        {
+            return new ToolDescription.Builder().AddPrioritizedSection(_loc.T(DescriptionLocKey)).Build();
+        }
+
+        public bool ProcessInput()
+        {
+            try
+            {
+                return ProcessInputSafe();
+            }
+            catch (Exception e)
+            {
+                // Fail safe: this runs every frame, so never let an error repeat. Log it and leave the tool.
+                ModLog.Error($"cable tool failed and was closed: {e}");
+                _toolService.SwitchToDefaultTool();
+                return true;
+            }
+        }
+
+        private bool ProcessInputSafe()
+        {
+            if (!_origin || _origin.IsDeleted)
+            {
+                _toolService.SwitchToDefaultTool();
+                return true;
+            }
+            PowerTransferStation target = _selectableObjectRaycaster.TryHitSelectableObject(out SelectableObject hitObject)
+                ? hitObject.GetComponent<PowerTransferStation>()
+                : null;
+            CableLinkError error = _cableConnectionService.Validate(_origin, target);
+            if (_inputService.MainMouseButtonDown && !_inputService.MouseOverUI)
+            {
+                if (error == CableLinkError.None)
+                {
+                    Link(target);
+                    _uiSoundController.PlayClickSound();
+                    return true;
+                }
+                _uiSoundController.PlayCantDoSound();
+            }
+            _previewRenderer.Draw(_origin, target, error);
+            return false;
+        }
+
+        private void Link(PowerTransferStation target)
+        {
+            PowerTransferStation origin = _origin;
+            _cableConnectionService.Link(origin, target);
+            _toolService.SwitchToDefaultTool();
+            _entitySelectionService.Select(target);
+            // Like ziplines: keep chaining from the new station while it has a free slot.
+            if (_cableConnectionService.HasFreeSlot(target))
+            {
+                SwitchTo(target);
+                _toolService.SwitchTool(this);
+            }
+        }
+    }
+}

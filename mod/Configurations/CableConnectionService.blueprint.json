@@ -1,0 +1,7 @@
+{
+  "CableConnectionServiceSpec": {
+    "MaxCableSpan": 30,
+    "MaxCablesPerStation": 3,
+    "MaxInclination": 50
+  }
+}

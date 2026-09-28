@@ -1,13 +1,13 @@
-# CLAUDE.md: Timberborn "Rope Power" Mod
+# CLAUDE.md: Timberborn "Cable Power Transfer" Mod
 
 ## Project summary
 
-A Timberborn (1.0+) mod that replaces long runs of power shafts with **Power Transfer Stations** linked by **rope loops**.
+A Timberborn (1.0+) mod that replaces long runs of power shafts with **Power Transfer Stations** linked by **cable loops**.
 
 - A **Power Transfer Station** is a 1×1 building. Its base connects to adjacent power shafts or powered buildings like a shaft junction. A tower rises 2 blocks above the base with a pulley wheel at the top.
-- Players link two stations with a **rope loop**, drawn between the tower tops like a zipline cable.
+- Players link two stations with a **cable loop**, drawn between the tower tops like a zipline cable.
 - Linked stations behave as if a continuous power shaft joined them: both sides become **one mechanical power network**.
-- A station can hold multiple ropes (default max 3), so stations can chain and branch.
+- A station can hold multiple cables (default max 3), so stations can chain and branch.
 
 ## Guiding principles
 
@@ -22,8 +22,8 @@ A Timberborn (1.0+) mod that replaces long runs of power shafts with **Power Tra
 - **Target game build:** Timberborn 1.1.2.4 (Steam stable). Decompile against the installed DLLs.
 - **Build setup (hybrid, no Unity):** this repo follows my existing dotnet-only mods (`../rotting-trees`, `../seeder`, `../Logically`). Mirror their conventions:
   - `Directory.Build.props` defines `TimberbornDir`, `TimberbornManaged` and `ModsDir`, with the default Steam path and `Documents/Timberborn/Mods`.
-  - `src/RopePower/RopePower.csproj` is `netstandard2.1` and references the game's `Managed/*.dll` with `Private="false"`.
-  - `mod/` holds the manifest, blueprints, localization and models. The build copies `mod/**` plus the DLL into `Documents/Timberborn/Mods/RopePower/`.
+  - `src/CablePowerTransfer/CablePowerTransfer.csproj` is `netstandard2.1` and references the game's `Managed/*.dll` with `Private="false"`.
+  - `mod/` holds the manifest, blueprints, localization and models. The build copies `mod/**` plus the DLL into `Documents/Timberborn/Mods/CablePowerTransfer/`.
 - **Modding repo:** `https://github.com/mechanistry/timberborn-modding` is cloned alongside at `../timberborn-modding`. It's used only as a reference for the manifest, blueprint and Timbermesh formats. The example mods ship `.timbermesh` files directly in `Data/`, so models don't need Unity. The repo pins Unity 6000.5.11f1; only install that if we ever need an asset bundle.
 - **Harmony:** not shipped with the game. Depend on the Steam Workshop "Harmony" mod (manifest `Id: "Harmony"`, v2.4.1, workshop item 3284904751) through `RequiredMods`. Reference its `0Harmony.dll` at compile time with `Private="false"`, and never bundle it.
 - **3D models:** Blender plus the Timbermesh plugin. I'll handle modelling; you write the specs and code that reference the models.
@@ -61,47 +61,47 @@ Keep a running notes file at `docs/game-api-notes.md`. For each relevant game cl
 - Faction: Folktails first. Structure it so an Iron Teeth variant is a blueprint-only addition.
 
 ### `PowerTransferStation` component (C#)
-- Holds `RopePartners`: a list of linked stations, persisted by entity ID.
+- Holds `CablePartners`: a list of linked stations, persisted by entity ID.
 - Exposes an anchor point (the world position of the pulley top) for rendering.
-- On demolish or deletion, removes all its ropes from both ends and triggers a power-graph rebuild.
+- On demolish or deletion, removes all its cables from both ends and triggers a power-graph rebuild.
 - Tolerates a missing partner on load: drop the link and log a warning.
 
-### `RopeConnectionService` (C#)
+### `CableConnectionService` (C#)
 - Single place that adds and removes links, keeping both ends in sync.
 - Validates new links:
   - The target is a different station.
   - The two stations aren't already linked.
-  - Both stations are under the max-ropes limit.
+  - Both stations are under the max-cables limit.
   - The span is within the maximum (configurable; start at the vanilla zipline range of 30).
   - **Steepness:** the same inclination rule and limit as ziplines (`MaxCableInclination`, 50° in 1.1.2.4, computed as in `ZiplineConnectionService.InclinationIsValid`).
   - **Same district (lenient, as for ziplines):** a station's district is the district road on any tile horizontally adjacent to its base. Linking fails only when both ends have a district and they differ. A station with no adjacent district road can link to anything.
-  - **Clearance and blocks along the rope (same as ziplines):** take the Bresenham voxel line between the anchors, excluding each station's own cells. Every cell must pass `BlockValidator.BlocksValid` for a 1×1×1 rope block or already hold a rope block. On connect, place an invisible rope block entity in each cell so nothing can be built through the rope. On disconnect, remove the blocks no other rope still uses.
-  - **Our own `RopeBlock` blueprint, not the vanilla zipline block.** Ropes can share cells with other ropes, but ropes and ziplines can't cross each other.
+  - **Clearance and blocks along the cable (same as ziplines):** take the Bresenham voxel line between the anchors, excluding each station's own cells. Every cell must pass `BlockValidator.BlocksValid` for a 1×1×1 cable block or already hold a cable block. On connect, place an invisible cable block entity in each cell so nothing can be built through the cable. On disconnect, remove the blocks no other cable still uses.
+  - **Our own `PowerCableBlock` blueprint, not the vanilla zipline block.** Cables can share cells with other cables, but cables and ziplines can't cross each other.
 - Triggers a power-graph rebuild after every change.
 
 ### Power graph hook (Harmony)
-- Goal: rope partners are treated as neighbours when the game builds mechanical networks.
-- Expected approach: a **postfix** on the method that collects a mechanical node's connected/adjacent nodes, adding rope partners' nodes. Confirm the real method via decompilation before writing it.
+- Goal: cable partners are treated as neighbours when the game builds mechanical networks.
+- Expected approach: a **postfix** on the method that collects a mechanical node's connected/adjacent nodes, adding cable partners' nodes. Confirm the real method via decompilation before writing it.
 - All Harmony code lives in `Patches/`, one patch per file, each with a header comment naming the game method and version it was written against.
 - **Fallback (plan B, only if a graph merge proves impossible or unstable):** paired transfer, where one station acts as a consumer and the partner acts as a generator of equal output. Discuss with me before switching.
 
 ### Connection tool and UI
-- Entity panel fragment on a selected station that lists its connections (partner, distance) with remove buttons, plus an "Add rope" button.
-- "Add rope" enters a picking mode: hover a station to preview the rope, green if valid and red with a reason if not. Click to confirm; Esc cancels.
+- Entity panel fragment on a selected station that lists its connections (partner, distance) with remove buttons, plus an "Add cable" button.
+- "Add cable" enters a picking mode: hover a station to preview the cable, green if valid and red with a reason if not. Click to confirm; Esc cancels.
 - Mirror the zipline connection UX as closely as practical.
 
 ### Visuals
 - Station model: base + tower + pulley wheel (my Blender work, exported as Timbermesh).
-- Rope loop: two parallel lines between the pulley tops with slight catenary sag, drawn as a generated mesh or LineRenderer (match whatever ziplines use if feasible).
-- When powered, scroll the rope texture and spin the pulleys, with speed tied to network power if the game exposes it. When unpowered, keep them static.
+- Cable loop: two parallel lines between the pulley tops with slight catenary sag, drawn as a generated mesh or LineRenderer (match whatever ziplines use if feasible).
+- When powered, scroll the cable texture and spin the pulleys, with speed tied to network power if the game exposes it. When unpowered, keep them static.
 
 ### Settings (configurable, for balancing)
-- Max rope span
-- Max ropes per station
+- Max cable span
+- Max cables per station
 - Optional per-station power loss in hp (default 0)
 - Optional throughput cap (default off)
 
-**Open decision:** whether ropes carry a gameplay cost (loss or cap) or are a pure long-distance shaft replacement. Implement both as settings defaulting to off, and I'll decide after playtesting.
+**Open decision:** whether cables carry a gameplay cost (loss or cap) or are a pure long-distance shaft replacement. Implement both as settings defaulting to off, and I'll decide after playtesting.
 
 ## Layout
 
@@ -111,16 +111,16 @@ power-station/
   Directory.Build.props         # game + Mods paths (same as my other mods)
   docs/game-api-notes.md
   docs/test-checklists.md
-  mod/                          # deployed as-is to Documents/Timberborn/Mods/RopePower/
+  mod/                          # deployed as-is to Documents/Timberborn/Mods/CablePowerTransfer/
     manifest.json
     Buildings/, TemplateCollections/, Localizations/  # blueprints + .timbermesh, same as ../seeder/mod
-  src/RopePower/
-    RopePower.csproj
+  src/CablePowerTransfer/
+    CablePowerTransfer.csproj
     Stations/                   # PowerTransferStation, configurators
-    Ropes/                      # RopeConnectionService, validation, persistence
+    Cables/                      # CableConnectionService, validation, persistence
     Patches/                    # Harmony patches only
     UI/                         # panel fragment, connection tool
-    Rendering/                  # rope mesh / animation
+    Rendering/                  # cable mesh / animation
   tools/TimbermeshGen/          # offline model generator/inspector (.timbermesh), Blender preview script
   decompiled/                   # gitignored reference only
 ```
@@ -132,7 +132,7 @@ Inside `mod/`, data folders sit at the mod root, as in `../seeder/mod`: `Buildin
 Each phase ends with: a summary of what changed, any API assumptions made, and an in-game test checklist for me.
 
 ### Phase 0: Setup and research
-- Set up the dotnet project skeleton and confirm a minimal mod (one configurator that logs `[RopePower] loaded`) builds, deploys and loads in-game.
+- Set up the dotnet project skeleton and confirm a minimal mod (one configurator that logs `[CablePowerTransfer] loaded`) builds, deploys and loads in-game.
 - Decompile the priority assemblies and write `docs/game-api-notes.md`, covering how the mechanical graph is built and rebuilt, how zipline connections are stored and validated, and how zipline cables render.
 - **Done when:** the notes file clearly identifies the method to patch for the power hook, or explains why no clean hook exists.
 
@@ -141,7 +141,7 @@ Each phase ends with: a summary of what changed, any API assumptions made, and a
 - **Done when:** the station can be built, connects to shafts on its sides like a junction, and passes power through locally.
 
 ### Phase 2: Persistent links (no UI)
-- `PowerTransferStation` component and `RopeConnectionService`, with save/load of links.
+- `PowerTransferStation` component and `CableConnectionService`, with save/load of links.
 - Temporary debug trigger (a debug key or console command) that links the two most recently built stations.
 - **Done when:** links survive save/load and are cleaned up on demolition (verified via logs).
 
@@ -154,8 +154,8 @@ Each phase ends with: a summary of what changed, any API assumptions made, and a
 - **Done when:** the whole flow is playable with no debug tools.
 
 ### Phase 5: Visuals
-- Rope rendering with sag, anchored to the tower tops. Powered animation for rope and pulleys. Integrate the real station model once I provide it.
-- **Done when:** ropes look right at various distances and height differences, and the animation reflects power state.
+- Cable rendering with sag, anchored to the tower tops. Powered animation for cable and pulleys. Integrate the real station model once I provide it.
+- **Done when:** cables look right at various distances and height differences, and the animation reflects power state.
 
 ### Phase 6: Balance, polish, release
 - Settings, cost tuning, and edge-case testing: flooding, large networks, many stations, loading saves made without the mod, and removing the mod from a save.
@@ -164,8 +164,8 @@ Each phase ends with: a summary of what changed, any API assumptions made, and a
 ## Coding conventions
 
 - Use dependency injection via the game's configurator / `[Context]` pattern, as in the example mods. No static singletons except Harmony patch classes.
-- Log with a consistent `[RopePower]` prefix.
-- Fail safe: an invalid or corrupt rope link is dropped with a warning, never a crash.
+- Log with a consistent `[CablePowerTransfer]` prefix.
+- Fail safe: an invalid or corrupt cable link is dropped with a warning, never a crash.
 - Keep game-version-sensitive code (patches, reflection) isolated and commented.
 - Small, reviewable commits, one per logical step.
 

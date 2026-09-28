@@ -4,8 +4,8 @@
 #   blender -b --factory-startup --python preview.py -- <outdir> <station.obj> [neighbour.obj] [icon]
 #
 # OBJ files come from `TimbermeshGen obj` (Blender space, Z up). The optional neighbour (e.g. a vanilla clutch
-# exported the same way) is placed one block along Unity -X to check that the axles line up. Two mock rope strands
-# are drawn from the pulley anchor, where RopeCableModel attaches them.
+# exported the same way) is placed one block along Unity -X to check that the axles line up. Two mock cable strands
+# are drawn from the pulley anchor, where CableLoopModel attaches them.
 import math
 import os
 import sys
@@ -28,7 +28,7 @@ TEXTURES = {
 }
 # Unity pulley centre (0.5, 2.85, 0.5) -> Blender (-x, -z, y).
 PULLEY = Vector((-0.5, -0.5, 2.85))
-ROPE_OFFSET = 0.175
+CABLE_OFFSET = 0.175
 
 for obj in list(bpy.data.objects):
     bpy.data.objects.remove(obj)
@@ -73,19 +73,19 @@ import_obj(station_obj)
 if neighbour_obj:
     import_obj(neighbour_obj, (1, 0, 0))  # Unity x - 1
 
-rope_mat = bpy.data.materials.new("Rope")
-rope_mat.use_nodes = True
-rope_mat.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.45, 0.33, 0.2, 1)
+cable_mat = bpy.data.materials.new("Cable")
+cable_mat.use_nodes = True
+cable_mat.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.45, 0.33, 0.2, 1)
 if not icon_mode:
-    # Rope towards Unity +Z (Blender -Y): side = Cross(up, +Z) = +X (Unity) = -X (Blender).
+    # Cable towards Unity +Z (Blender -Y): side = Cross(up, +Z) = +X (Unity) = -X (Blender).
     for sign in (1, -1):
-        start = PULLEY + Vector((-ROPE_OFFSET * sign, 0, 0))
+        start = PULLEY + Vector((-CABLE_OFFSET * sign, 0, 0))
         end = start + Vector((0, -4, -0.25))
         mid = (start + end) / 2
         bpy.ops.mesh.primitive_cylinder_add(radius=0.018, depth=(end - start).length, location=mid, vertices=8)
-        rope = bpy.context.active_object
-        rope.rotation_euler = (end - start).to_track_quat("Z", "Y").to_euler()
-        rope.data.materials.append(rope_mat)
+        cable = bpy.context.active_object
+        cable.rotation_euler = (end - start).to_track_quat("Z", "Y").to_euler()
+        cable.data.materials.append(cable_mat)
 
 bpy.ops.mesh.primitive_plane_add(size=12, location=(0, 0, 0))
 ground = bpy.context.active_object

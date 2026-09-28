@@ -1,20 +1,20 @@
 # In-game test checklists
 
-Build and deploy: run `dotnet build src/RopePower -c Release`. This copies `mod/**` and `RopePower.dll` to
-`Documents/Timberborn/Mods/RopePower/`. Logs are in
+Build and deploy: run `dotnet build src/CablePowerTransfer -c Release`. This copies `mod/**` and `CablePowerTransfer.dll` to
+`Documents/Timberborn/Mods/CablePowerTransfer/`. Logs are in
 `%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`.
 
 ## Phase 0: skeleton loads
 
-1. Start Timberborn. In the mod manager, **Rope Power** (v0.0.1) is listed; enable it.
+1. Start Timberborn. In the mod manager, **Cable Power Transfer** (v0.0.1) is listed; enable it.
 2. Load any Folktails save, or start a new game.
-3. Close the game and search `Player.log` for `[RopePower] loaded`. It should appear exactly once per
+3. Close the game and search `Player.log` for `[CablePowerTransfer] loaded`. It should appear exactly once per
    game load.
-4. Check there are no exceptions mentioning `RopePower` in `Player.log`.
+4. Check there are no exceptions mentioning `CablePowerTransfer` in `Player.log`.
 
-Report: pass/fail for each step, plus any log lines containing `RopePower`.
+Report: pass/fail for each step, plus any log lines containing `CablePowerTransfer`.
 
-**Result (2026-09-25): passed.** `[RopePower] loaded` appeared in Player.log.
+**Result (2026-09-25): passed.** `[CablePowerTransfer] loaded` appeared in Player.log.
 
 ## Phase 1: station prototype (blueprint only)
 
@@ -33,10 +33,10 @@ Use a **Folktails** game. Dev mode's instant build is fine for speed.
 6. **Corner and branch:** generator on one side, consumers on two other sides. All of them are powered.
 7. **Demolish:** demolish the station and the consumers lose power. Rebuild it and power comes back.
 8. **Save/load:** save, reload, and power still flows through the station.
-9. **Rope slots (cosmetic check):** select the station. Report any odd power markers or arrows inside or
-   on top of the tower. The station has 3 hidden rope connection points there.
+9. **Cable slots (cosmetic check):** select the station. Report any odd power markers or arrows inside or
+   on top of the tower. The station has 3 hidden cable connection points there.
 10. **Log:** check Player.log for exceptions or warnings that mention `PowerTransferStation`,
-    `RopePower`, `Timbermesh` or `Transput`.
+    `CablePowerTransfer`, `Timbermesh` or `Transput`.
 
 Report: pass/fail for each step, a screenshot of steps 2 and 9 if anything looks off, and any relevant log
 lines.
@@ -45,63 +45,63 @@ lines.
 
 ## Phase 2: persistent links (no UI, no power merge yet)
 
-Links are **data only** in this phase. They don't carry power yet (that's Phase 3), there's no rope
-visual, and no clearance or rope-block check. Everything is verified through `Player.log` lines starting
-with `[RopePower]`.
+Links are **data only** in this phase. They don't carry power yet (that's Phase 3), there's no cable
+visual, and no clearance or cable-block check. Everything is verified through `Player.log` lines starting
+with `[CablePowerTransfer]`.
 
 Setup: a Folktails game. The shortcuts below don't need dev mode. To build quickly, turn on dev mode
 (**Alt+Shift+Z**, which logs `Dev mode enabled`) and **hold Ctrl while placing** a station to place it already
 finished (vanilla `PlaceFinished`). "Newest" means most recently
 **finished**; unfinished stations don't count.
 
-Dev actions: each result appears as an on-screen notification starting "Rope Power:" and is also logged.
+Dev actions: each result appears as an on-screen notification starting "Cable Power Transfer:" and is also logged.
 
 | Shortcut (works with or without dev mode) | Action |
 |---|---|
 | **Ctrl+Alt+L** | link two newest stations |
 | **Ctrl+Alt+J** | link newest station to all others |
 | **Ctrl+Alt+U** | unlink newest station |
-| **Ctrl+Alt+K** | log all rope links (count on screen, pairs in Player.log) |
+| **Ctrl+Alt+K** | log all cable links (count on screen, pairs in Player.log) |
 
 The same actions are in the dev panel. It appears **bottom-left** while dev mode is on and is collapsed
-by default: click its title, then type "rope" in the filter box.
+by default: click its title, then type "cable" in the filter box.
 
 *First attempt (2026-09-25): the user found no way to trigger linking. The log showed dev mode enabled
-but no Rope Power action invoked, because the panel is collapsed and wasn't found. The shortcuts and
+but no Cable Power Transfer action invoked, because the panel is collapsed and wasn't found. The shortcuts and
 notifications were added as a fix.*
 
 *Second attempt (2026-09-25): the keys didn't work. The log had no `Dev mode enabled`, so the
 `DevModeOnly` bindings were blocked by `DevModeKeyBindingBlocker`. The keys now work without dev mode.
 On the first frame after loading a save, the log confirms
-`[RopePower] dev: debug keys active …` (or warns `key bindings not found`). Each finished station also
+`[CablePowerTransfer] dev: debug keys active …` (or warns `key bindings not found`). Each finished station also
 logs `station (x, y, z) finished`.*
 
-1. **Load:** the log shows `[RopePower] loaded (max span 30, max ropes 3, max inclination 50)` and **not**
-   `RopeConnectionService blueprint not found`.
+1. **Load:** the log shows `[CablePowerTransfer] loaded (max span 30, max cables 3, max inclination 50)` and **not**
+   `CableConnectionService blueprint not found`.
 2. **Link:** build station A, then station B about 10 blocks away. Run *link two newest* and the log
    shows `linked station (…) <-> station (…) (span …)`.
-3. **Inspect:** *log all rope links* shows `2 station(s), 1 rope link(s)` and the pair.
+3. **Inspect:** *log all cable links* shows `2 station(s), 1 cable link(s)` and the pair.
 4. **Rejections:**
    - Run *link two newest* again and you get `rejected: AlreadyLinked`.
    - Build C more than 30 blocks from B, then run *link two newest*. You get `rejected: TooLong`.
    - Optional: build a station very close to another but much higher (e.g. on a cliff 4+ blocks up,
      1 block away). *link two newest* gives `rejected: TooSteep`.
-5. **Max ropes:** build 4 more stations within 30 blocks of each other, all finishing after A and B.
+5. **Max cables:** build 4 more stations within 30 blocks of each other, all finishing after A and B.
    Run *link newest station to all others*. The newest one links to 3 and then logs `rejected: SourceFull`.
 6. **Save/load:** save and reload.
    - Each link shows exactly **one** `restored link … <-> …` line.
-   - *log all rope links* shows the same pairs as before saving.
+   - *log all cable links* shows the same pairs as before saving.
    - There are no `dropped` warnings.
 7. **Demolish:** demolish one linked station. The log shows `unlinked …` for each of its links, and
-   *log all rope links* no longer lists them. Save, reload: nothing about it is restored and there are no
+   *log all cable links* no longer lists them. Save, reload: nothing about it is restored and there are no
    warnings.
 8. **Unlink:** run *unlink newest station* and the newest station's links are removed (`unlinked …`).
 9. **District (optional, needs two districts):** put station X beside a road of district 1 and station Y
    beside a road of district 2, within 30 blocks. *link two newest* gives `rejected: DifferentDistricts`.
    A station with no road next to it links to either.
-10. **Log:** no exceptions mentioning `RopePower` or `PowerTransferStation`.
+10. **Log:** no exceptions mentioning `CablePowerTransfer` or `PowerTransferStation`.
 
-Report: pass/fail for each step, plus the `[RopePower]` lines from steps 6 and 7.
+Report: pass/fail for each step, plus the `[CablePowerTransfer]` lines from steps 6 and 7.
 
 **Partial result (2026-09-25, third attempt):**
 - Steps 1–4 passed. The debug keys were active, linking and counting worked, and AlreadyLinked, TooSteep
@@ -122,9 +122,9 @@ Report: pass/fail for each step, plus the `[RopePower]` lines from steps 6 and 7
 
 ## Phase 3: power graph merge ⚠️
 
-The ropes should now carry power. There's still no rope visual. Use the Ctrl+Alt keys from Phase 2 (no
+The cables should now carry power. There's still no cable visual. Use the Ctrl+Alt keys from Phase 2 (no
 dev mode needed). **Ctrl+Alt+K** now logs each link as
-`rope connected: True/True | same network: True | network supply X hp, demand Y hp`.
+`cable connected: True/True | same network: True | network supply X hp, demand Y hp`.
 
 **Setup:** use a clean area or a new Folktails game. **Demolish the old test stations** so "newest" is
 unambiguous.
@@ -133,12 +133,12 @@ unambiguous.
   (e.g. a Lumber Mill or Gear Workshop, staffed).
 - Finish A first, then B. In dev mode, Ctrl-placing places buildings finished.
 
-1. **Patch loaded:** Player.log shows `[RopePower] Harmony patches applied` (at the main menu, before the
+1. **Patch loaded:** Player.log shows `[CablePowerTransfer] Harmony patches applied` (at the main menu, before the
    save loads). There's no `patching failed` line.
 2. **Before linking:** the consumer shows no power.
 3. **Link:** press **Ctrl+Alt+L**. The consumer becomes powered within a moment. Selecting a shaft on
    B's side shows the generator's supply. Ctrl+Alt+K shows
-   `rope connected: True/True | same network: True`.
+   `cable connected: True/True | same network: True`.
 4. **Unlink:** press **Ctrl+Alt+U** (B is newest). The consumer loses power, and Ctrl+Alt+K shows
    0 links. Press **Ctrl+Alt+L** again and power comes back.
 5. **Save/load:** save and reload while linked. The consumer is powered straight after load, and
@@ -166,12 +166,12 @@ step 3, run Ctrl+Alt+K first so the log captures the link state.
 
 **Result (2026-09-25): core merge passed.** The user reported "all looked ok". Log evidence:
 - Step 1: `Harmony patches applied`.
-- Step 3: A (83,58,5) and B (85,64,5), 6.3 apart, showed `rope connected: True/True | same network: True
+- Step 3: A (83,58,5) and B (85,64,5), 6.3 apart, showed `cable connected: True/True | same network: True
   | network supply 79 hp`.
 - Step 5: the link was restored after save/load.
 - Step 6: B was demolished (unlinked), rebuilt and relinked.
 - Step 7: A was demolished, rebuilt and relinked.
-- A third station C (89,62,5) was linked to **both** A and B with Ctrl+Alt+J. That made a loop of ropes,
+- A third station C (89,62,5) was linked to **both** A and B with Ctrl+Alt+J. That made a loop of cables,
   and it caused no errors.
 - Step 10: no exceptions, errors or warnings anywhere in the log.
 
@@ -184,37 +184,37 @@ Gaps in the log evidence:
 - Step 9 became a loop instead of a chain, so "demolish the middle station splits the chain" wasn't
   exercised.
 
-## Phase 4: connection tool, station panel, rope blocks (+ deferred Phase 3 checks)
+## Phase 4: connection tool, station panel, cable blocks (+ deferred Phase 3 checks)
 
 The debug keys are **gone**. Everything now goes through the station panel. Each link change writes a
-`[RopePower] power … rope connected …/… same network …` line to Player.log as evidence.
+`[CablePowerTransfer] power … cable connected …/… same network …` line to Player.log as evidence.
 
 Setup: a Folktails game. Dev mode with Ctrl-placing is fine for speed. Start from a clean area, because
-old test ropes still work but there's no key to list them any more.
+old test cables still work but there's no key to list them any more.
 
 **Panel and tool**
-1. Select a finished station. The panel has a **"Ropes:"** section with an **"Add connection"** button
+1. Select a finished station. The panel has a **"Cables:"** section with an **"Add connection"** button
    (plus icon) and 2 greyed empty slots.
 2. Click **Add connection**:
    - the station is highlighted
    - the cursor changes
-   - the bottom text says "Select another Power Transfer Station to connect with a rope"
-3. Hover another station within range. A **green** preview rope appears, and the tooltip shows distance
+   - the bottom text says "Select another Power Transfer Station to connect with a cable"
+3. Hover another station within range. A **green** preview cable appears, and the tooltip shows distance
    `x / 30` and inclination `y / 50` with green ticks.
 4. Hover invalid targets. The preview turns **red** and the tooltip gives the reason:
    - too far: `Too far!`
    - too steep: `Too steep!`
-   - a station that already has 3 ropes: `Too many connections!`
-   - a building in the rope's straight line: `Line obstructed!`, with the blocking building highlighted
+   - a station that already has 3 cables: `Too many connections!`
+   - a building in the cable's straight line: `Line obstructed!`, with the blocking building highlighted
    - optional: stations beside two different districts' roads give the districts warning
 5. Press **Esc** in picking mode. The tool exits and the origin station is selected again.
 6. Click a valid target:
-   - the rope is created: two straight strands between the tower tops, using the zipline cable look as a
+   - the cable is created: two straight strands between the tower tops, using the zipline cable look as a
      placeholder until Phase 5
    - the target becomes selected, and the tool continues from it if it has free slots (like ziplines)
    - Esc stops
-7. The station panel lists the rope: partner icon plus length. Hovering the button highlights the
-   partner and the rope. Clicking it selects and focuses the partner.
+7. The station panel lists the cable: partner icon plus length. Hovering the button highlights the
+   partner and the cable. Clicking it selects and focuses the partner.
 
 **Power (including the Phase 3 gaps)**
 
@@ -222,69 +222,69 @@ old test ropes still work but there's no key to list them any more.
    the tool. The consumer is powered.
    - Let it run until the consumer is **working**. Then unlink and relink, and check the log's `power …`
      line shows **demand > 0 hp**.
-9. **Unlink split (deferred from Phase 3):** click the red ✕ on the rope button:
-   - the rope disappears
+9. **Unlink split (deferred from Phase 3):** click the red ✕ on the cable button:
+   - the cable disappears
    - **the consumer loses power**
-   - the log shows `linked False, rope connected False/False, same network False`
+   - the log shows `linked False, cable connected False/False, same network False`
    - Relink and power returns.
 10. **Chain split (deferred from Phase 3):** A (generator) → B → C (consumer), linking A–B and then
-    B–C. C's consumer is powered. **Demolish B**: C's consumer loses power, and both ropes disappear.
+    B–C. C's consumer is powered. **Demolish B**: C's consumer loses power, and both cables disappear.
 
-**Rope blocks**
+**Cable blocks**
 
-11. With a rope linked, try to place a building (e.g. a shaft on a platform, or a tall building) in a
-    cell the rope passes through. Placement is refused.
-12. Unlink that rope, and the same cell is buildable again.
-13. A rope and a vanilla zipline can't cross, in either direction.
-14. **Save/load:** ropes are drawn again after load, power still flows, and cells are still blocked.
-    Old test saves whose ropes pass through buildings may log `cell(s) along the rope are occupied and
+11. With a cable linked, try to place a building (e.g. a shaft on a platform, or a tall building) in a
+    cell the cable passes through. Placement is refused.
+12. Unlink that cable, and the same cell is buildable again.
+13. A cable and a vanilla zipline can't cross, in either direction.
+14. **Save/load:** cables are drawn again after load, power still flows, and cells are still blocked.
+    Old test saves whose cables pass through buildings may log `cell(s) along the cable are occupied and
     were not reserved`. That's expected and fine.
-15. **Unfinished:** link a finished station to one still under construction. The rope is drawn grey,
+15. **Unfinished:** link a finished station to one still under construction. The cable is drawn grey,
     and it turns normal colour and carries power once construction finishes.
 16. **Log:** no exceptions and no `patch failed` / `could not be loaded` / `not found` errors from
-    `[RopePower]`.
+    `[CablePowerTransfer]`.
 
-Report: pass/fail for each step, screenshots of the panel, tool preview and ropes (steps 1, 3, 4, 6),
+Report: pass/fail for each step, screenshots of the panel, tool preview and cables (steps 1, 3, 4, 6),
 and Player.log in the project folder.
 
-*Phase 4 bug (2026-09-25): hovering a target whose rope crossed a zipline threw a NullReferenceException in
-`Highlighter.HighlightPrimary`, called from `RopePreviewRenderer.Draw`. The cause was zipline cable blocks
+*Phase 4 bug (2026-09-25): hovering a target whose cable crossed a zipline threw a NullReferenceException in
+`Highlighter.HighlightPrimary`, called from `CablePreviewRenderer.Draw`. The cause was zipline cable blocks
 (not highlightable) being passed as "blocking objects". They're now filtered out, and the tool has a
-fail-safe that logs once and exits. Retest step 13: the rope turns red with `Line obstructed!` and there's
+fail-safe that logs once and exits. Retest step 13: the cable turns red with `Line obstructed!` and there's
 no error. Nothing is highlighted, because the zipline's blocks are invisible.*
 
 
-*Phase 4 visual note (2026-09-25): the ropes meet the placeholder pylon pole about one block below its
-crossbar. This is expected. The rope anchor (`RopeAnchorPoint` Y = 2.85) is set for the real 3-block
+*Phase 4 visual note (2026-09-25): the cables meet the placeholder pylon pole about one block below its
+crossbar. This is expected. The cable anchor (`CableAnchorPoint` Y = 2.85) is set for the real 3-block
 station, while the placeholder zipline pylon is 4 blocks tall. **Decision: leave it** until the real
-model arrives in Phase 5, then set `RopeAnchorPoint` to match the model's pulley top exactly.*
+model arrives in Phase 5, then set `CableAnchorPoint` to match the model's pulley top exactly.*
 
-## Phase 5a: rope visuals (before the real station model)
+## Phase 5a: cable visuals (before the real station model)
 
 Phase 4 results are still to come. You can test both in one run.
 
-1. **Sag:** a linked rope is two strands, one each side of the tower top, forming a loop. Each strand
-   sags slightly in the middle. Try short (≈5), medium (≈15) and long (≈28) ropes, plus ones with a height
-   difference. Long ropes sag more, up to about ½ block. The curve should look smooth: 8 straight
-   pieces per strand, which you can tune in `mod/Configurations/RopeRenderer.blueprint.json` without
+1. **Sag:** a linked cable is two strands, one each side of the tower top, forming a loop. Each strand
+   sags slightly in the middle. Try short (≈5), medium (≈15) and long (≈28) cables, plus ones with a height
+   difference. Long cables sag more, up to about ½ block. The curve should look smooth: 8 straight
+   pieces per strand, which you can tune in `mod/Configurations/CableRenderer.blueprint.json` without
    rebuilding.
 2. **Still misaligned with the placeholder:** strands meet the pylon pole about one block below its
    crossbar (decided: fixed with the real model).
-3. **Powered motion:** with generator power flowing through the rope, the rope texture **moves**, and the
+3. **Powered motion:** with generator power flowing through the cable, the cable texture **moves**, and the
    two strands move in opposite directions. Unpower it (stop or remove the generator, or unlink) and within
-   about half a second the rope is **still**. *This relies on the vanilla zipline cable shader animating
+   about half a second the cable is **still**. *This relies on the vanilla zipline cable shader animating
    when `_IsOperative` = 1. It hasn't been verified yet, so report what you see.*
 4. **Placeholder spin:** when powered, the placeholder Clutch base may now animate, because the blueprint
    gained the vanilla `MechanicalNodeAnimatorSpec`. That's fine either way. The real pulley animation
    comes with the model.
-5. **Level slider:** lower the visible-level slider below a station's height. Its ropes cast shadows but
+5. **Level slider:** lower the visible-level slider below a station's height. Its cables cast shadows but
    aren't drawn. Raise it again and they're back.
-6. **Preview:** the tool's green/red preview rope has the same sag.
+6. **Preview:** the tool's green/red preview cable has the same sag.
 7. **Highlights and greyscale:**
-   - hovering a rope button in the panel highlights the whole rope, all pieces
-   - a rope to an unfinished station is grey, and turns normal colour when construction finishes
-8. **Performance:** with about 10 ropes there's no noticeable frame drop.
-9. **Log:** no `[RopePower]` errors and no `RopeRenderer blueprint not found` warning.
+   - hovering a cable button in the panel highlights the whole cable, all pieces
+   - a cable to an unfinished station is grey, and turns normal colour when construction finishes
+8. **Performance:** with about 10 cables there's no noticeable frame drop.
+9. **Log:** no `[CablePowerTransfer]` errors and no `CableRenderer blueprint not found` warning.
 
 ## Phase 5b: real station model
 
@@ -297,14 +297,14 @@ run this together with the Phase 4 and 5a lists.
    trestle, and a wooden pulley with yellow straps on top. Nothing sticks out of its 1×1 tile.
 3. **Shaft line-up:** put shafts against each of the four sides. Their axles meet the station's stubs at the
    same height and size, with no visible step or gap. Take a screenshot.
-4. **Rope fit:** linked ropes enter the pulley's groove from both sides, between the two wooden rims, instead of
+4. **Cable fit:** linked cables enter the pulley's groove from both sides, between the two wooden rims, instead of
    meeting the pole below it (the Phase 4/5a misalignment should be gone). Check:
-   - short and long ropes, in several directions, including diagonals
-   - ropes to a higher and a lower station
-   - a station with 3 ropes
+   - short and long cables, in several directions, including diagonals
+   - cables to a higher and a lower station
+   - a station with 3 cables
 5. **Spin when powered:** with power flowing, the pulley (and its yellow straps), the vertical drive shaft and
-   the four stubs turn. The pulley's rim should move **the same way as the rope texture**, with rope running
-   into the groove on one side and out on the other. If the rope and pulley visibly disagree, report it and I'll
+   the four stubs turn. The pulley's rim should move **the same way as the cable texture**, with cable running
+   into the groove on one side and out on the other. If the cable and pulley visibly disagree, report it and I'll
    flip one sign.
 6. **Still when unpowered:** stop the generator or unlink. Everything stops, and the stubs don't turn either.
    Slow power (a weak generator, efficiency < 100 %) turns it more slowly.
@@ -315,3 +315,17 @@ run this together with the Phase 4 and 5a lists.
 9. **Level slider:** lowering the slider through the station's height cuts the model like other buildings.
 
 Report: pass/fail for each step, screenshots for steps 2, 3, 4 and 5, and Player.log.
+
+## Rename: "Rope Power" → "Cable Power Transfer" (2026-09-28)
+
+The mod Id is now `Elum.CablePowerTransfer`, deployed to `Mods/CablePowerTransfer/` (the old `Mods/RopePower/`
+folder was removed). In-game wording, code and blueprints say "cable" instead of "rope". The save keys are
+unchanged.
+
+1. In the mod manager, **Cable Power Transfer** is listed (enable it if needed), and there's no Rope Power entry.
+2. Load a save made before the rename. The game may warn that `Elum.RopePower` is missing; continue anyway.
+   Stations and their links (now cables) come back, and power still flows.
+3. Station panel header reads "Cables:". The tool prompt reads "Select another Power Transfer Station to connect
+   with a cable".
+4. The log uses the `[CablePowerTransfer]` prefix, with no spec or blueprint errors (for example
+   `CableConnectionServiceSpec`, `CableRendererSpec`, `PowerCableBlock`).

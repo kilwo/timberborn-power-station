@@ -1,7 +1,7 @@
 ID,Text,Comment
 Building.PowerTransferStation.DisplayName,Power Transfer Station,
-Building.PowerTransferStation.Description,"Connects to power shafts on all four sides. Link stations with rope loops to carry power over long distances.",
-Building.PowerTransferStation.FlavorDescription,"Why build a hundred shafts when one rope will do?",
-RopePower.Ropes,"Ropes:","Header above the list of rope connections on a Power Transfer Station."
-RopePower.PickDestination,"Select another Power Transfer Station to connect with a rope","Shown while picking the other end of a new rope."
-RopePower.RopeLength,{0},"Length of a rope shown on its connection button. {0} is the formatted distance."
+Building.PowerTransferStation.Description,"Connects to power shafts on all four sides. Link stations with cable loops to carry power over long distances.",
+Building.PowerTransferStation.FlavorDescription,"Why build a hundred shafts when one cable will do?",
+CablePowerTransfer.Cables,"Cables:","Header above the list of cable connections on a Power Transfer Station."
+CablePowerTransfer.PickDestination,"Select another Power Transfer Station to connect with a cable","Shown while picking the other end of a new cable."
+CablePowerTransfer.CableLength,{0},"Length of a cable shown on its connection button. {0} is the formatted distance."
