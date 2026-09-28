@@ -22,10 +22,15 @@ Preview renders (Blender 5.x, textures loaded from the game's example `.blend`, 
 ```bash
 dotnet run -- obj <out>/station.obj 10 <model.timbermesh>...      # merges models; 10 = animation frame to pose
 blender -b --factory-startup --python preview.py -- <out> <out>/station.obj [neighbour.obj]   # overview/pulley/base.png
-blender -b --factory-startup --python preview.py -- <out> <out>/station.obj - icon           # icon.png (112x112)
 ```
 
-The toolbar icon `PowerTransferStationIcon.png` is the `icon` render.
+The toolbar icon `PowerTransferStationIcon.png` is flat line art in the vanilla icon style, drawn by
+`tools/Icons/station_icon.py`. The style matches the vanilla power icons: gold (186, 160, 107), ~2.5 px rounded
+strokes at 112 px, soft black shadow, transparent background. To redraw it:
+
+```bash
+python tools/Icons/station_icon.py mod/Buildings/Power/PowerTransferStation/PowerTransferStationIcon.png
+```
 
 ## What's in it
 | Node | Pivot | Contents | Animation |

@@ -1,7 +1,9 @@
 # Renders preview images of generated models in Blender (background mode). Textures come from the game's own
 # example scene (StreamingAssets/Modding/TimberbornExampleModels.blend), so nothing is copied into this repo.
 #
-#   blender -b --factory-startup --python preview.py -- <outdir> <station.obj> [neighbour.obj] [icon]
+#   blender -b --factory-startup --python preview.py -- <outdir> <station.obj> [neighbour.obj]
+#
+# (The toolbar icon is flat line art drawn by tools/Icons/station_icon.py, not a render.)
 #
 # OBJ files come from `TimbermeshGen obj` (Blender space, Z up). The optional neighbour (e.g. a vanilla clutch
 # exported the same way) is placed one block along Unity -X to check that the axles line up. Two mock cable strands
@@ -16,7 +18,6 @@ from mathutils import Vector
 argv = sys.argv[sys.argv.index("--") + 1:]
 out_dir, station_obj = argv[0], argv[1]
 neighbour_obj = argv[2] if len(argv) > 2 and argv[2] != "-" else None
-icon_mode = len(argv) > 3 and argv[3] == "icon"
 
 EXAMPLE_BLEND = r"C:\Program Files (x86)\Steam\steamapps\common\Timberborn\Timberborn_Data\StreamingAssets\Modding\TimberbornExampleModels.blend"
 TEXTURES = {
@@ -76,16 +77,15 @@ if neighbour_obj:
 cable_mat = bpy.data.materials.new("Cable")
 cable_mat.use_nodes = True
 cable_mat.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.45, 0.33, 0.2, 1)
-if not icon_mode:
-    # Cable towards Unity +Z (Blender -Y): side = Cross(up, +Z) = +X (Unity) = -X (Blender).
-    for sign in (1, -1):
-        start = PULLEY + Vector((-CABLE_OFFSET * sign, 0, 0))
-        end = start + Vector((0, -4, -0.25))
-        mid = (start + end) / 2
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.018, depth=(end - start).length, location=mid, vertices=8)
-        cable = bpy.context.active_object
-        cable.rotation_euler = (end - start).to_track_quat("Z", "Y").to_euler()
-        cable.data.materials.append(cable_mat)
+# Cable towards Unity +Z (Blender -Y): side = Cross(up, +Z) = +X (Unity) = -X (Blender).
+for sign in (1, -1):
+    start = PULLEY + Vector((-CABLE_OFFSET * sign, 0, 0))
+    end = start + Vector((0, -4, -0.25))
+    mid = (start + end) / 2
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.018, depth=(end - start).length, location=mid, vertices=8)
+    cable = bpy.context.active_object
+    cable.rotation_euler = (end - start).to_track_quat("Z", "Y").to_euler()
+    cable.data.materials.append(cable_mat)
 
 bpy.ops.mesh.primitive_plane_add(size=12, location=(0, 0, 0))
 ground = bpy.context.active_object
@@ -93,8 +93,6 @@ ground_mat = bpy.data.materials.new("Ground")
 ground_mat.use_nodes = True
 ground_mat.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.32, 0.4, 0.22, 1)
 ground.data.materials.append(ground_mat)
-if icon_mode:
-    ground.hide_render = True
 
 bpy.ops.object.light_add(type="SUN", rotation=(math.radians(50), math.radians(10), math.radians(-40)))
 bpy.context.active_object.data.energy = 3.5
@@ -108,7 +106,6 @@ scene = bpy.context.scene
 scene.render.engine = "CYCLES"
 scene.cycles.samples = 48
 scene.cycles.device = "CPU"
-scene.render.film_transparent = icon_mode
 scene.view_settings.view_transform = "Standard"
 
 bpy.ops.object.camera_add()
@@ -125,16 +122,6 @@ def shoot(name, location, target, lens=50, size=(900, 900)):
     bpy.ops.render.render(write_still=True)
 
 
-if icon_mode:
-    # Toolbar icons are 112x112 (as in ../seeder); render large and downscale for clean edges.
-    scene.cycles.samples = 128
-    shoot("icon_large", (3.2, -5.2, 4.4), (-0.5, -0.5, 1.45), lens=58, size=(448, 448))
-    icon = bpy.data.images.load(os.path.join(out_dir, "icon_large.png"))
-    icon.scale(112, 112)
-    icon.filepath_raw = os.path.join(out_dir, "icon.png")
-    icon.file_format = "PNG"
-    icon.save()
-else:
-    shoot("overview", (3.5, -6.0, 5.0), (0.0, -0.8, 1.2), lens=35)
-    shoot("pulley", (0.6, -2.2, 3.9), (-0.5, -0.5, 2.8), lens=50)
-    shoot("base", (1.8, -2.4, 1.6), (0.0, -0.5, 0.45), lens=40)
+shoot("overview", (3.5, -6.0, 5.0), (0.0, -0.8, 1.2), lens=35)
+shoot("pulley", (0.6, -2.2, 3.9), (-0.5, -0.5, 2.8), lens=50)
+shoot("base", (1.8, -2.4, 1.6), (0.0, -0.5, 0.45), lens=40)

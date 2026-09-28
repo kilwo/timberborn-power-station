@@ -291,7 +291,8 @@ Phase 4 results are still to come. You can test both in one run.
 The placeholder Clutch and pylon are replaced by the generated model (`docs/station-model-spec.md`). You can
 run this together with the Phase 4 and 5a lists.
 
-1. **Loads:** the Power tab shows the new icon (a wooden trestle tower). The log has no
+1. **Loads:** the Power tab shows the new icon: gold line art in the same style as the other power icons (a tower with a
+   wheel, a cable loop to a smaller station, and shaft arrows at the base). The log has no
    `Material ... not found in repository` or `Incorrect Zlib compression file header` errors.
 2. **Looks:** a built station is a plank deck and gearbox, square shaft stubs on all four sides, a slender
    trestle, and a wooden pulley with yellow straps on top. Nothing sticks out of its 1×1 tile.
