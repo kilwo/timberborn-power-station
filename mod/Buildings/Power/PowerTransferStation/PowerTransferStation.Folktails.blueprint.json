@@ -162,15 +162,33 @@
     },
     "PulleyRadius": 0.175
   },
-  "MechanicalNodeAnimatorSpec": {
-    "MinSpeedMultiplier": 0.0
-  },
+  "StationAnimatorSpec": {},
   "Children": {
     "#Finished": {
       "Children": {
         "Model": {
           "TimbermeshSpec": {
             "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.Model"
+          }
+        },
+        "StubRight": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.StubRight.Model"
+          }
+        },
+        "StubLeft": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.StubLeft.Model"
+          }
+        },
+        "StubUp": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.StubUp.Model"
+          }
+        },
+        "StubDown": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.StubDown.Model"
           }
         }
       },

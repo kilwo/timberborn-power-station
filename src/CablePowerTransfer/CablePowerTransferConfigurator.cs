@@ -37,6 +37,7 @@ namespace CablePowerTransfer
             Bind<PowerCableBlockService>().AsSingleton();
             Bind<PowerCableBlock>().AsTransient();
             Bind<CableRenderer>().AsSingleton();
+            Bind<StationAnimator>().AsTransient();
             Bind<CablePreviewTooltip>().AsSingleton();
             Bind<CablePreviewRenderer>().AsSingleton();
             Bind<CableConnectionAddingTool>().AsSingleton();
@@ -51,6 +52,7 @@ namespace CablePowerTransfer
             TemplateModule.Builder builder = new TemplateModule.Builder();
             builder.AddDecorator<PowerTransferStationSpec, PowerTransferStation>();
             builder.AddDecorator<PowerCableBlockSpec, PowerCableBlock>();
+            builder.AddDecorator<StationAnimatorSpec, StationAnimator>();
             return builder.Build();
         }
     }

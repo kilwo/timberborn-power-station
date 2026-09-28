@@ -10,10 +10,10 @@ using Timberborn.TimbermeshDTO;
 // Offline tool for the Cable Power Transfer mod's models. Reads with the game's own DTO (Timberborn.TimbermeshDTO + the game's
 // protobuf-net), so anything it writes is checked against exactly what the game will parse.
 //
-//   station <out.timbermesh>                 build the Power Transfer Station model and verify it
-//   info <file.timbermesh>                   nodes, per-material bounds, animation angles
+//   station <outDir>                         build the Power Transfer Station models (main + 4 stubs), verify them
+//   info <file.timbermesh>                   nodes, per-material bounds, animation angles and spin axes
 //   dump <file.timbermesh> [maxVerts]        raw nodes and vertex properties
-//   obj <file.timbermesh> <out.obj> [frame]  Blender-space OBJ for previews (Z up), animated nodes posed at frame
+//   obj <out.obj> <frame> <file>...          Blender-space OBJ of one or more models (Z up), animated nodes posed at frame
 
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
@@ -21,8 +21,12 @@ CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 switch (args.FirstOrDefault())
 {
     case "station" when args.Length >= 2:
-        TimbermeshFile.Write(PowerTransferStationModel.Build(), args[1]);
-        Info(args[1]);
+        WriteAndVerify(PowerTransferStationModel.Build(), Path.Combine(args[1], "PowerTransferStation.Folktails.Model.timbermesh"));
+        foreach ((string face, Vector3 outward) in PowerTransferStationModel.StubFaces)
+        {
+            WriteAndVerify(PowerTransferStationModel.BuildStub(face, outward),
+                Path.Combine(args[1], $"PowerTransferStation.Folktails.Stub{face}.Model.timbermesh"));
+        }
         break;
     case "info" when args.Length >= 2:
         Info(args[1]);
@@ -30,13 +34,19 @@ switch (args.FirstOrDefault())
     case "dump" when args.Length >= 2:
         Dump(args[1], args.Length > 2 ? int.Parse(args[2]) : 4);
         break;
-    case "obj" when args.Length >= 3:
-        ExportObj(args[1], args[2], args.Length > 3 ? int.Parse(args[3]) : 0);
+    case "obj" when args.Length >= 4:
+        ExportObj(args.Skip(3).ToArray(), args[1], int.Parse(args[2]));
         break;
     default:
-        Console.WriteLine("usage: station <out> | info <file> | dump <file> [maxVerts] | obj <file> <out.obj> [frame]");
+        Console.WriteLine("usage: station <outDir> | info <file> | dump <file> [maxVerts] | obj <out.obj> <frame> <file>...");
         Environment.ExitCode = 1;
         break;
+}
+
+static void WriteAndVerify(TmModel model, string path)
+{
+    TimbermeshFile.Write(model, path);
+    Info(path);
 }
 
 static Model Read(string path)
@@ -140,12 +150,21 @@ static void Dump(string path, int maxVerts)
 
 // Unity (Y up, left-handed) -> Blender (Z up, right-handed): (x, y, z) -> (-x, -z, y), the Timbermesh plugin's
 // convention (vanilla example models sit at negative Blender X/Y). The mirror flips winding, so faces are reversed.
-static void ExportObj(string path, string objPath, int frame)
+static void ExportObj(string[] paths, string objPath, int frame)
 {
-    Model m = Read(path);
-    Matrix4x4[] world = new Matrix4x4[m.Nodes.Length];
     StringBuilder obj = new StringBuilder();
     int vertexBase = 1;
+    foreach (string path in paths)
+    {
+        vertexBase = AppendObj(Read(path), obj, vertexBase, frame);
+    }
+    File.WriteAllText(objPath, obj.ToString());
+    Console.WriteLine($"wrote {objPath}");
+}
+
+static int AppendObj(Model m, StringBuilder obj, int vertexBase, int frame)
+{
+    Matrix4x4[] world = new Matrix4x4[m.Nodes.Length];
     for (int i = 0; i < m.Nodes.Length; i++)
     {
         Node n = m.Nodes[i];
@@ -183,8 +202,7 @@ static void ExportObj(string path, string objPath, int frame)
         }
         vertexBase += n.VertexCount;
     }
-    File.WriteAllText(objPath, obj.ToString());
-    Console.WriteLine($"wrote {objPath}");
+    return vertexBase;
 }
 
 static Vector3 ReadVector3(VertexProperty p, int v) =>

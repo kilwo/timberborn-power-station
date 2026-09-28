@@ -303,8 +303,8 @@ run this together with the Phase 4 and 5a lists.
    - cables to a higher and a lower station
    - a station with 3 cables
 5. **Spin when powered:** with power flowing, the pulley (and its yellow straps), the vertical drive shaft and
-   the four stubs turn. Looking at each side from outside, **all four stubs turn the same way**, for example all
-   clockwise. If you'd rather they all turned the other way, it's one constant (`StubDirection`).
+   the four stubs turn. **Each stub turns the same way as the shaft connected to it** (retest below). Stubs with
+   nothing attached follow the first connected one.
    The pulley's rim should move **the same way as the cable texture**, with cable running into the groove on one
    side and out on the other. If the cable and pulley visibly disagree, report it and I'll
    flip one sign.
@@ -331,3 +331,23 @@ unchanged.
    with a cable".
 4. The log uses the `[CablePowerTransfer]` prefix, with no spec or blueprint errors (for example
    `CableConnectionServiceSpec`, `CableRendererSpec`, `PowerCableBlock`).
+
+## Input stubs match their shafts (2026-09-28)
+
+Each input stub is now its own model and turns the same way as the shaft or generator on its side, using the same
+rule vanilla shafts use (`docs/game-api-notes.md` §10).
+
+1. A straight shaft line into one side: the stub and the shaft's axle turn together, with no visible reversal at
+   the joint.
+2. Shafts on all four sides, fed from different directions (for example one line from a generator, the others
+   leading to consumers): every stub matches its own shaft, even if that means neighbouring stubs turn opposite ways.
+3. Corners and junction shafts next to the station, and a generator placed directly against a stub (for example a
+   Power Wheel output facing the station): the stub still matches.
+4. After changing the network (adding or removing a shaft on the far side, which can flip a shaft line's direction),
+   the stubs follow within a moment.
+5. After save and load, the stubs are still right.
+6. Unpowered: the stubs and pulley stop. Construction still shows the Clutch scaffold. Log: no `[CablePowerTransfer]`
+   `found N of 4 input stubs` warning.
+
+If a stub is consistently wrong in one situation, note the shaft shape next to it (straight, corner, T or cross) and
+which side of the station it's on, with a screenshot.

@@ -395,3 +395,27 @@ measure and never committed):
   The `ZiplineCable` shader samples `v·_Length·_Density + _NonlinearTime·_IsOperative·_Speed`, and the
   material has `_Density` 5.5 and `_Speed` 1.5. So the texture drifts towards each piece's far end at
   **0.273 blocks/s**.
+
+---
+
+## 10. Shaft rotation direction (checked 1.1.2.4, used by `Rendering/ShaftFaceRotation.cs`)
+
+- Each `Transput` has `ReversedRotation`: the face's spin as seen from outside that face (false = Normal,
+  true = Reversed). It starts from `TransputSpec.ReverseRotation` (inverted if the building is flipped).
+- `MechanicalGraphModelUpdater` (MechanicalSystemUI) walks from generators, then from any remaining shafts. It
+  changes **shaft** transputs only: a shaft face touching another face gets the opposite flag (connected faces turn
+  together when their flags differ), and along a straight shaft the two ends get opposite flags. Generator flags are
+  never changed. The walk stops at non-shaft nodes, **so it never sets flags from our station**.
+- `ModularShaftVariantFinder.GetRotationFromTransputs` gives each shaft face Normal/Reversed from its flag, but
+  **Ignored** when the neighbour is neither a shaft nor a generator (or has `IgnoreRotation`), which includes our
+  station. `OptimizeForIgnoredRotation` then shows an Ignored face as the reverse of the face across from it
+  (`ReverseOrSetNormal`; None/Ignored → Normal), resolving Down→Up and Right→Left in that order.
+  `ShaftModelFactory` plays each part with `IAnimator.PlayBackwards = isReversed`.
+- **Calibration:** the Folktails Power Wheel's output face is `Up` (grid +y = Unity +Z) with `ReverseRotation: true`,
+  and its output gear (`#PowerWheelGearFolktailsAnimated` at y 0.5) spins about −Z, i.e. about the **inward** axis.
+  So Normal = spinning about the outward axis of that face, and Reversed = about the inward axis. Our stub models spin
+  about their outward axis, so forwards = Normal.
+- `MechanicalNodeAnimator` (vanilla `MechanicalNodeAnimatorSpec`) enables only the first `IAnimator` in the
+  hierarchy. `ModularShaftAnimator` drives all animators with `Enabled = ActiveAndPowered && PowerEfficiency > 0` and
+  `Speed = PowerEfficiency × NonlinearAnimationManager.SpeedMultiplier` (TimeSystem), and `StationAnimator` copies
+  this. `MechanicalNode.Transputs` is rebuilt on every finished/unfinished change.

@@ -25,8 +25,17 @@ namespace TimbermeshGen.Models
         private const int Frames = 96;
         private const float Framerate = 24f;
 
-        // Sign of the input stubs' rotation about their outward axes (the same for all four). Flip to reverse them all.
+        // Input stubs turn about their OUTWARD axis. In the game's transput convention that is "Normal" rotation
+        // (Transput.ReversedRotation == false): calibrated on the Folktails Power Wheel, whose Up face is flagged
+        // Reversed and whose output gear turns about the inward axis. The runtime StationAnimator plays a stub
+        // backwards when its face must be Reversed to match the neighbouring shaft.
         private const float StubDirection = 1f;
+
+        /// <summary>Stub models by the base (unrotated) Direction3D of the face they serve, and their outward axes.</summary>
+        public static readonly (string Face, Vector3 Outward)[] StubFaces =
+        {
+            ("Right", Vector3.UnitX), ("Left", -Vector3.UnitX), ("Up", Vector3.UnitZ), ("Down", -Vector3.UnitZ)
+        };
 
         private const float DeckTop = 0.09f;
         private const float HousingHalf = 0.21f;
@@ -41,6 +50,7 @@ namespace TimbermeshGen.Models
         private const float PlatformBottom = 2.7f;
         private const float PlatformTop = 2.77f;
 
+        /// <summary>Main model: base, trestle and pulley. The input stubs are separate models (<see cref="BuildStub"/>).</summary>
         public static TmModel Build()
         {
             TmNode root = new TmNode { Name = "PowerTransferStation.Folktails.Model", Parent = -1 };
@@ -49,20 +59,21 @@ namespace TimbermeshGen.Models
             TmNode pulley = AnimatedNode("#Pulley", PulleyCentre, Vector3.UnitY, -1f);
             BuildPulley().WriteTo(pulley);
 
-            List<TmNode> nodes = new List<TmNode> { root, pulley };
-            // One node per input stub, each turning the same way about its own outward axis, so all four look the
-            // same from outside the building (as if driven off one central bevel gear).
-            string[] names = { "#StubPositiveX", "#StubNegativeZ", "#StubNegativeX", "#StubPositiveZ" };
-            for (int i = 0; i < 4; i++)
-            {
-                Matrix4x4 orientation = Matrix4x4.CreateRotationY(i * MathF.PI / 2);
-                Vector3 outward = Vector3.Transform(Vector3.UnitX, orientation);
-                TmNode stub = AnimatedNode(names[i], AxleCentre, outward, StubDirection);
-                BuildStub(orientation).WriteTo(stub);
-                nodes.Add(stub);
-            }
+            return new TmModel { Name = "", Nodes = new[] { root, pulley } };
+        }
 
-            return new TmModel { Name = "", Nodes = nodes.ToArray() };
+        /// <summary>
+        /// One input stub as its own model, so each gets its own animator and can be reversed independently
+        /// (grid Direction3D: Right = +X, Left = -X, Up = +Z, Down = -Z in Unity model space).
+        /// </summary>
+        public static TmModel BuildStub(string face, Vector3 outward)
+        {
+            TmNode root = new TmNode { Name = $"PowerTransferStation.Folktails.Stub{face}.Model", Parent = -1 };
+            TmNode stub = AnimatedNode("#Stub", AxleCentre, outward, StubDirection);
+            // Stub geometry is built along +X and turned to face outward (Y rotation keeps it level).
+            float angle = MathF.Atan2(-outward.Z, outward.X);
+            BuildStubMesh(Matrix4x4.CreateRotationY(angle)).WriteTo(stub);
+            return new TmModel { Name = "", Nodes = new[] { root, stub } };
         }
 
         private static MeshBuilder BuildStatic()
@@ -189,7 +200,7 @@ namespace TimbermeshGen.Models
         /// One input stub along local +X (0.22 square) from just inside the housing to the block face, with a metal
         /// band, in the stub node's frame (origin at the axle centre).
         /// </summary>
-        private static MeshBuilder BuildStub(Matrix4x4 orientation)
+        private static MeshBuilder BuildStubMesh(Matrix4x4 orientation)
         {
             MeshBuilder stub = new MeshBuilder();
             stub.Box(White, new Vector3(HousingHalf - 0.03f, -AxleHalf, -AxleHalf), new Vector3(0.5f, AxleHalf, AxleHalf), f => LongPlank(f + 1));

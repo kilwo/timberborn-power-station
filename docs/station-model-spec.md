@@ -4,7 +4,8 @@ This is the contract between the station model and the code/blueprint. Units are
 **Unity model space** (Y up, origin at the block corner) unless marked otherwise.
 
 ## Current model: generated
-`mod/Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.Model.timbermesh` is **generated** by
+`mod/Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.Model.timbermesh` and the four input-stub
+models `PowerTransferStation.Folktails.Stub{Right,Left,Up,Down}.Model.timbermesh` are **generated** by
 `tools/TimbermeshGen` (`Models/PowerTransferStationModel.cs`). It isn't a Blender export. The tool writes the
 Timbermesh format directly (see `docs/game-api-notes.md` §9) and reads every file back with the game's own
 DTO, so what it writes is what the game parses. All dimensions are constants at the top of the model class.
@@ -13,13 +14,13 @@ Regenerate after changing the model code:
 
 ```bash
 cd tools/TimbermeshGen
-dotnet run -- station ../../mod/Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.Model.timbermesh
+dotnet run -- station ../../mod/Buildings/Power/PowerTransferStation      # writes all five model files
 ```
 
 Preview renders (Blender 5.x, textures loaded from the game's example `.blend`, nothing copied into the repo):
 
 ```bash
-dotnet run -- obj <model.timbermesh> <out>/station.obj 10         # optional 3rd arg: animation frame to pose
+dotnet run -- obj <out>/station.obj 10 <model.timbermesh>...      # merges models; 10 = animation frame to pose
 blender -b --factory-startup --python preview.py -- <out> <out>/station.obj [neighbour.obj]   # overview/pulley/base.png
 blender -b --factory-startup --python preview.py -- <out> <out>/station.obj - icon           # icon.png (112x112)
 ```
@@ -31,12 +32,15 @@ The toolbar icon `PowerTransferStationIcon.png` is the `icon` render.
 |---|---|---|---|
 | `PowerTransferStation.Folktails.Model` | (0, 0, 0) | Plank deck, gearbox housing and lid, metal band and bearing collars, four-post tapered trestle with rungs and braces, top platform | none |
 | `#Pulley` | (0.5, 2.85, 0.5) | Wooden wheel with a metal-lined groove, octagonal hub, four yellow straps on top, drive shaft down to the lid | one turn about +Y, angle decreasing |
-| `#StubPositiveX`, `#StubNegativeZ`, `#StubNegativeX`, `#StubPositiveZ` | (0.5, 0.5, 0.5) | One 0.22 square input stub each, from inside the housing to its block face, with a metal band | one turn about its own **outward** axis, the same sign for all four, so every input looks like it turns the same way from outside (`StubDirection` flips all four) |
+| `#Stub` in each `...Stub<Face>.Model` (Face = the base `Direction3D`: Right +X, Left −X, Up +Z, Down −Z) | (0.5, 0.5, 0.5) | One 0.22 square input stub, from inside the housing to its block face, with a metal band | one turn about its **outward** axis, which is "Normal" rotation in the game's transput convention; `StationAnimator` plays it backwards when the connected shaft needs "Reversed" |
 
 Every animation is `Default`, 96 frames at 24 fps (4 s per turn). The pulley rim (r 0.175) then moves at
 0.275 blocks/s, which matches the cable texture's 0.273 blocks/s. The spin direction matches the cable's
 travel: cable leaves each station on `CableLoopModel`'s `+side` and arrives on `−side`.
-`MechanicalNodeAnimatorSpec` runs the animation only while the station is powered.
+The stubs are separate models so each has its own animator. `StationAnimator` (`StationAnimatorSpec` in the
+blueprint, replacing the vanilla `MechanicalNodeAnimatorSpec`, which drives only one animator) runs all five while the
+station is powered. It turns each stub the same way as the shaft or generator on that side (see
+`docs/game-api-notes.md` §10).
 
 Materials: `BaseWood_Brown/LightBrown/White.Folktails`, `BaseMetal.Folktails`, `PaintedMetal.Folktails`, with
 all vertex colours white. The model is about 2,000 vertices and 21 KB.
