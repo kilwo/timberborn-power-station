@@ -4,6 +4,7 @@ using System.Linq;
 using CablePowerTransfer.Cables;
 using CablePowerTransfer.Stations;
 using Timberborn.BlueprintSystem;
+using Timberborn.ConstructionMode;
 using Timberborn.LevelVisibilitySystem;
 using Timberborn.Rendering;
 using Timberborn.RootProviders;
@@ -16,7 +17,8 @@ namespace CablePowerTransfer.Rendering
 {
     /// <summary>
     /// Keeps one CableLoopModel per cable link, plus a model factory for the connection tool preview.
-    /// Cables to unfinished stations are greyscale; cables move while their network's shafts turn (zipline shader _IsOperative);
+    /// Cables to unfinished stations are greyscale and only shown in construction mode (an unfinished building selected,
+    /// a construction tool group or the cable tool open); cables move while their network's shafts turn (zipline shader _IsOperative);
     /// cables to a station hidden by the level slider cast shadows only.
     /// Mirrors Timberborn.ZiplineSystem.ZiplineCableRenderer (1.1.2.4).
     /// </summary>
@@ -40,6 +42,7 @@ namespace CablePowerTransfer.Rendering
         private readonly MaterialColorer _materialColorer;
         private readonly Highlighter _highlighter;
         private readonly EventBus _eventBus;
+        private readonly ConstructionModeService _constructionModeService;
 
         private readonly Dictionary<PowerCableKey, CableLoopModel> _models = new Dictionary<PowerCableKey, CableLoopModel>();
         private CableRendererSpec _spec;
@@ -52,7 +55,7 @@ namespace CablePowerTransfer.Rendering
         public CableRenderer(CableConnectionService cableConnectionService, PowerTransferStationRegistry registry,
                             TemplateInstantiator templateInstantiator, ISpecService specService,
                             RootObjectProvider rootObjectProvider, MaterialColorer materialColorer, Highlighter highlighter,
-                            EventBus eventBus)
+                            EventBus eventBus, ConstructionModeService constructionModeService)
         {
             _cableConnectionService = cableConnectionService;
             _registry = registry;
@@ -62,6 +65,7 @@ namespace CablePowerTransfer.Rendering
             _materialColorer = materialColorer;
             _highlighter = highlighter;
             _eventBus = eventBus;
+            _constructionModeService = constructionModeService;
         }
 
         public void Load()
@@ -100,6 +104,15 @@ namespace CablePowerTransfer.Rendering
         {
             // Applied in UpdateSingleton, like ZiplineCableRenderer, once model visibility has been updated.
             _layerVisibilityChanged = true;
+        }
+
+        [OnEvent]
+        public void OnConstructionModeChanged(ConstructionModeChangedEvent constructionModeChangedEvent)
+        {
+            foreach (KeyValuePair<PowerCableKey, CableLoopModel> entry in _models)
+            {
+                UpdateVisibility(entry.Key, entry.Value);
+            }
         }
 
         /// <summary>A free-standing model (for previews). Returns null if the template is unavailable.</summary>
@@ -170,6 +183,7 @@ namespace CablePowerTransfer.Rendering
                 model.SetGreyscale(!station.IsFinished || !other.IsFinished);
                 model.SetOperative(IsOperative(station, other));
                 _models.Add(key, model);
+                UpdateVisibility(key, model);
                 UpdateShadowOnly(key, model);
             }
             else if (!linked && _models.TryGetValue(key, out CableLoopModel existing))
@@ -183,9 +197,11 @@ namespace CablePowerTransfer.Rendering
         {
             foreach (PowerTransferStation partner in station.CablePartners)
             {
-                if (_models.TryGetValue(new PowerCableKey(station, partner), out CableLoopModel model))
+                var key = new PowerCableKey(station, partner);
+                if (_models.TryGetValue(key, out CableLoopModel model))
                 {
                     model.SetGreyscale(!station.IsFinished || !partner.IsFinished);
+                    UpdateVisibility(key, model);
                 }
             }
         }
@@ -194,6 +210,14 @@ namespace CablePowerTransfer.Rendering
         {
             // Move only while the network's shafts turn, as vanilla ModularShaftAnimator decides.
             return station.IsTurning && other.IsTurning && station.IsCableConnectedTo(other);
+        }
+
+        // Like ZiplineCableRenderer's inactive connections: a cable to an unfinished station is shown only in
+        // construction mode, so it doesn't hang in mid-air above a construction site.
+        private void UpdateVisibility(PowerCableKey key, CableLoopModel model)
+        {
+            bool active = key.First.IsFinished && key.Second.IsFinished;
+            model.SetVisible(active || _constructionModeService.InConstructionMode);
         }
 
         private static void UpdateShadowOnly(PowerCableKey key, CableLoopModel model)

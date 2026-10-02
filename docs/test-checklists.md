@@ -376,3 +376,16 @@ stays true while a battery holds charge even with no supply and no demand. It no
 3. A generator running with no consumers (supply above 0, demand 0): the shafts turn, so the cable moves too.
 
 **Result (2026-10-03): passed** ("that worked").
+
+## Cables to unfinished stations hidden outside construction mode (2026-10-03)
+
+*Bug (ss-1.png): a cable to an unbuilt station was always drawn, hanging in mid-air above the construction site. Vanilla
+ziplines only show such a cable in construction mode (`ZiplineCableRenderer` inactive connections). Cables now do the same.*
+
+1. Link a finished station to a placed but unbuilt one. While the unbuilt station stays selected (the tool selects it
+   after linking), the grey cable is visible.
+2. Deselect it (Esc or click empty ground). The cable disappears.
+3. Select the unbuilt station again, or open the Power build menu, or start "Add connection" from any station. The grey
+   cable shows again. Selecting a **finished** station on its own does not show it.
+4. When the station is finished, the cable stays visible, in normal colour.
+5. Save and reload with the station still unbuilt: the cable is hidden until one of the step 3 actions.
