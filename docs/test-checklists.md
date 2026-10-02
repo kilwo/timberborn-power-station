@@ -374,3 +374,5 @@ stays true while a battery holds charge even with no supply and no demand. It no
    off or pause every consumer. The shafts stop, and within about half a second the cable and pulley stop too.
 2. Unpause a consumer, so the battery supplies power. The shafts, pulley and cable all move again.
 3. A generator running with no consumers (supply above 0, demand 0): the shafts turn, so the cable moves too.
+
+**Result (2026-10-03): passed** ("that worked").
