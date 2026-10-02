@@ -16,7 +16,7 @@ namespace CablePowerTransfer.Rendering
 {
     /// <summary>
     /// Keeps one CableLoopModel per cable link, plus a model factory for the connection tool preview.
-    /// Cables to unfinished stations are greyscale; cables on a powered network move (zipline shader _IsOperative);
+    /// Cables to unfinished stations are greyscale; cables move while their network's shafts turn (zipline shader _IsOperative);
     /// cables to a station hidden by the level slider cast shadows only.
     /// Mirrors Timberborn.ZiplineSystem.ZiplineCableRenderer (1.1.2.4).
     /// </summary>
@@ -192,8 +192,8 @@ namespace CablePowerTransfer.Rendering
 
         private static bool IsOperative(PowerTransferStation station, PowerTransferStation other)
         {
-            // Same idea as vanilla MechanicalNodeAnimator for intermediary nodes: move while active and powered.
-            return station.IsPowered && other.IsPowered && station.IsCableConnectedTo(other);
+            // Move only while the network's shafts turn, as vanilla ModularShaftAnimator decides.
+            return station.IsTurning && other.IsTurning && station.IsCableConnectedTo(other);
         }
 
         private static void UpdateShadowOnly(PowerCableKey key, CableLoopModel model)

@@ -363,3 +363,14 @@ Gravity Battery).
 2. With 600 or more science, unlocking it deducts 600 and the building can then be placed.
 3. Older test saves: the station may now show as locked (unlocks are saved per building). Already-built stations
    and their cables keep working. Unlock it (or use dev mode) to build more.
+
+## Cable stops with the shafts (2026-10-03)
+
+*Bug: the cable texture kept moving after the network's shafts had stopped. The cable used `ActiveAndPowered`, which
+stays true while a battery holds charge even with no supply and no demand. It now uses the vanilla shaft rule
+(`ActiveAndPowered` and `PowerEfficiency > 0`), the same as the pulley and stubs.*
+
+1. A network with a generator, a cable and a gravity battery. Charge the battery, then stop the generator and switch
+   off or pause every consumer. The shafts stop, and within about half a second the cable and pulley stop too.
+2. Unpause a consumer, so the battery supplies power. The shafts, pulley and cable all move again.
+3. A generator running with no consumers (supply above 0, demand 0): the shafts turn, so the cable moves too.

@@ -75,8 +75,13 @@ namespace CablePowerTransfer.Stations
 
         public MechanicalGraph PowerGraph => _mechanicalNode.Graph;
 
-        /// <summary>Active (not blocked, e.g. flooded) and on a powered network; drives the moving-cable visual.</summary>
-        public bool IsPowered => _mechanicalNode.ActiveAndPowered;
+        /// <summary>
+        /// True when shafts on this network turn: active (not blocked, e.g. flooded), powered, and efficiency above 0.
+        /// ActiveAndPowered alone stays true on a network with a charged battery but no supply or demand, where shafts
+        /// stand still. Same test as Timberborn.ModularShafts.ModularShaftAnimator (1.1.2.4) and StationAnimator.
+        /// Drives the moving-cable visual.
+        /// </summary>
+        public bool IsTurning => _mechanicalNode.ActiveAndPowered && _mechanicalNode.PowerEfficiency > 0f;
 
         public float PulleyRadius => _spec.PulleyRadius > 0f ? _spec.PulleyRadius : 0.175f;
 
