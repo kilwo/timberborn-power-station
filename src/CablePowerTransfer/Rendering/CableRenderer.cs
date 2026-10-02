@@ -213,7 +213,7 @@ namespace CablePowerTransfer.Rendering
         }
 
         // Like ZiplineCableRenderer's inactive connections: a cable to an unfinished station is shown only in
-        // construction mode, so it doesn't hang in mid-air above a construction site.
+        // construction mode (vanilla: the BuilderPriority and Demolishing tool groups), so it doesn't hang in mid-air above a construction site.
         private void UpdateVisibility(PowerCableKey key, CableLoopModel model)
         {
             bool active = key.First.IsFinished && key.Second.IsFinished;

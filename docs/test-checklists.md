@@ -385,7 +385,7 @@ ziplines only show such a cable in construction mode (`ZiplineCableRenderer` ina
 1. Link a finished station to a placed but unbuilt one. While the unbuilt station stays selected (the tool selects it
    after linking), the grey cable is visible.
 2. Deselect it (Esc or click empty ground). The cable disappears.
-3. Select the unbuilt station again, or open the Power build menu, or start "Add connection" from any station. The grey
+3. Select the unbuilt station again, open the builder-priority or demolish tools, or start "Add connection" from any station. The grey
    cable shows again. Selecting a **finished** station on its own does not show it.
 4. When the station is finished, the cable stays visible, in normal colour.
 5. Save and reload with the station still unbuilt: the cable is hidden until one of the step 3 actions.
