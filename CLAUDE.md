@@ -57,7 +57,7 @@ Keep a running notes file at `docs/game-api-notes.md`. For each relevant game cl
 - New blueprint based on the vanilla power shaft junction.
 - 1×1 footprint, 3 blocks tall (base plus 2 tower blocks).
 - Mechanical transput faces on the four sides of the base block only.
-- Reasonable build cost to start (logs + planks + gears); tune later.
+- Build cost: 16 logs, 12 planks, 8 gears, plus 600 science to unlock (doubled from the starting 8/6/4 on 2026-10-03).
 - Faction: Folktails first. Structure it so an Iron Teeth variant is a blueprint-only addition.
 
 ### `PowerTransferStation` component (C#)
@@ -98,10 +98,10 @@ Keep a running notes file at `docs/game-api-notes.md`. For each relevant game cl
 ### Settings (configurable, for balancing)
 - Max cable span
 - Max cables per station
-- Optional per-station power loss in hp (default 0)
-- Optional throughput cap (default off)
 
-**Open decision:** whether cables carry a gameplay cost (loss or cap) or are a pure long-distance shaft replacement. Implement both as settings defaulting to off, and I'll decide after playtesting.
+**Decided (2026-10-03):** cables are a pure long-distance shaft replacement, the same as ziplines: no power loss, no
+throughput cap, and connecting a cable costs nothing. The cost is in the station itself (16 logs, 12 planks, 8 gears,
+600 science).
 
 ## Layout
 

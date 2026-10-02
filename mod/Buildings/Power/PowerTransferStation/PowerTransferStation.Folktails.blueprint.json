@@ -5,15 +5,15 @@
     "BuildingCost": [
       {
         "Id": "Log",
-        "Amount": 8
+        "Amount": 16
       },
       {
         "Id": "Plank",
-        "Amount": 6
+        "Amount": 12
       },
       {
         "Id": "Gear",
-        "Amount": 4
+        "Amount": 8
       }
     ],
     "ScienceCost": 600,
