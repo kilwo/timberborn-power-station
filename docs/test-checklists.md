@@ -401,3 +401,15 @@ ziplines only show such a cable in construction mode (`ZiplineCableRenderer` ina
    `power …` line per cable, then `after load: N cable link(s) between M station(s)`. Cables that carry power show
    `cable connected True/True, same network True`. If a supply still shows 0 hp right after load on a network
    with a running generator, report it: the generator may update its output a tick later than our log.
+
+## Station construction model (2026-10-03)
+
+The unfinished station no longer borrows the Clutch scaffold. It now shows its own half-built model on the vanilla
+construction base: the plank deck, the gearbox without its lid, and the four trestle posts up to about 1.4 blocks
+with the first ring of rungs.
+
+1. Place a station without finishing it. The construction site shows the half-built trestle described above, standing
+   inside its tile. There's no pulley or shaft stubs yet.
+2. Click the half-built posts: the construction site is selected (its collider now covers them).
+3. When construction finishes, it switches to the full model.
+4. Log: no `Material ... not found` or Timbermesh errors.

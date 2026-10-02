@@ -242,7 +242,7 @@
         },
         "ConstructionStage0": {
           "TimbermeshSpec": {
-            "Model": "Buildings/Power/Clutch/Clutch.Folktails.ConstructionStage0.Model"
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.ConstructionStage0.Model"
           },
           "CollidersSpec": {
             "BoxColliders": [
@@ -256,6 +256,18 @@
                   "X": 1.0,
                   "Y": 0.1,
                   "Z": 1.0
+                }
+              },
+              {
+                "Center": {
+                  "X": 0.5,
+                  "Y": 0.75,
+                  "Z": 0.5
+                },
+                "Size": {
+                  "X": 0.6,
+                  "Y": 1.32,
+                  "Z": 0.6
                 }
               }
             ],

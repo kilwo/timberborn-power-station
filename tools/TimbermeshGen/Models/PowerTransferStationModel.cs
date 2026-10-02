@@ -49,6 +49,15 @@ namespace TimbermeshGen.Models
         private const float PlatformHalf = 0.15f;
         private const float PlatformBottom = 2.7f;
         private const float PlatformTop = 2.77f;
+        private static readonly float[] Rungs = { 1.05f, 1.7f, 2.3f };
+
+        // Construction stage: the trestle posts stop just above the first rung, like vanilla's half-built pylon pole.
+        private const float StagePostTop = 1.4f;
+
+        private static readonly Vector3[] Corners =
+        {
+            new Vector3(-1, 0, -1), new Vector3(1, 0, -1), new Vector3(1, 0, 1), new Vector3(-1, 0, 1)
+        };
 
         /// <summary>Main model: base, trestle and pulley. The input stubs are separate models (<see cref="BuildStub"/>).</summary>
         public static TmModel Build()
@@ -76,68 +85,39 @@ namespace TimbermeshGen.Models
             return new TmModel { Name = "", Nodes = new[] { root, stub } };
         }
 
+        /// <summary>
+        /// Construction stage shown while the station is unfinished (on top of the vanilla 1x1 construction base): the
+        /// deck, the open gearbox housing, and the trestle posts built up to the first rungs. No lid, stubs or pulley.
+        /// </summary>
+        public static TmModel BuildConstructionStage()
+        {
+            TmNode root = new TmNode { Name = "PowerTransferStation.Folktails.ConstructionStage0.Model", Parent = -1 };
+            MeshBuilder mesh = new MeshBuilder();
+            AddDeck(mesh);
+            AddHousing(mesh, withLid: false);
+            AddPosts(mesh, StagePostTop);
+            AddRungs(mesh, 0);
+            mesh.WriteTo(root);
+            return new TmModel { Name = "", Nodes = new[] { root } };
+        }
+
         private static MeshBuilder BuildStatic()
         {
             MeshBuilder mesh = new MeshBuilder();
-
-            // Deck: five planks running along X.
-            const float deckMin = 0.08f, deckMax = 0.92f, gap = 0.01f;
-            float plankWidth = (deckMax - deckMin - 4 * gap) / 5;
-            for (int i = 0; i < 5; i++)
+            AddDeck(mesh);
+            AddHousing(mesh, withLid: true);
+            AddPosts(mesh, PostTop);
+            for (int level = 0; level < Rungs.Length; level++)
             {
-                float z0 = deckMin + i * (plankWidth + gap);
-                int plank = i;
-                mesh.Box(Brown, new Vector3(deckMin, 0, z0), new Vector3(deckMax, DeckTop, z0 + plankWidth), _ => Plank8(plank * 3 + 1),
-                    skipBottom: true);
+                AddRungs(mesh, level);
             }
-
-            // Gearbox housing, lid, and a metal band near the bottom.
-            mesh.Box(Brown, new Vector3(0.5f - HousingHalf, DeckTop, 0.5f - HousingHalf),
-                new Vector3(0.5f + HousingHalf, HousingTop, 0.5f + HousingHalf), f => LongPlank(f), skipBottom: true);
-            mesh.Box(LightBrown, new Vector3(0.5f - LidHalf, HousingTop, 0.5f - LidHalf), new Vector3(0.5f + LidHalf, LidTop, 0.5f + LidHalf),
-                f => Plank8(f + 2));
-            const float bandOut = HousingHalf + 0.012f;
-            mesh.Box(Metal, new Vector3(0.5f - bandOut, 0.14f, 0.5f - bandOut), new Vector3(0.5f + bandOut, 0.18f, 0.5f + bandOut),
-                _ => MetalSlice, skipBottom: true);
-
-            // Bearing collars where the axles leave the housing (octagonal metal rings).
-            Vector2[] collar = { new Vector2(0.12f, 0), new Vector2(0.17f, 0), new Vector2(0.17f, 0.03f), new Vector2(0.12f, 0.03f) };
-            foreach (Vector3 outward in new[] { Vector3.UnitX, -Vector3.UnitX, Vector3.UnitZ, -Vector3.UnitZ })
-            {
-                MeshBuilder ring = new MeshBuilder();
-                ring.Revolve(Vector3.Zero, collar, 8, _ => RevolveBand.Wrapped(Metal, PlainMetal, smooth: false), MathF.PI / 8);
-                mesh.Append(ring, AlignY(outward, AxleCentre + outward * HousingHalf));
-            }
-
-            // Trestle: four tapered corner posts from the deck to the top platform.
-            Vector3[] corners = { new Vector3(-1, 0, -1), new Vector3(1, 0, -1), new Vector3(1, 0, 1), new Vector3(-1, 0, 1) };
-            for (int i = 0; i < 4; i++)
-            {
-                Vector3 bottom = PostPoint(corners[i], DeckTop);
-                Vector3 top = PostPoint(corners[i], PostTop);
-                int plank = i;
-                mesh.Beam(Brown, bottom, top, PostWidth, PostWidth, Vector3.UnitX, _ => LongPlank(plank));
-            }
-
-            // Rungs on each face, and diagonal braces between them.
-            float[] rungs = { 1.05f, 1.7f, 2.3f };
-            for (int level = 0; level < rungs.Length; level++)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    Vector3 a = PostPoint(corners[i], rungs[level]);
-                    Vector3 b = PostPoint(corners[(i + 1) % 4], rungs[level]);
-                    int plank = level + i;
-                    mesh.Beam(LightBrown, a, b, 0.05f, 0.05f, Vector3.UnitY, _ => Plank8(plank));
-                }
-            }
-            for (int level = 0; level < rungs.Length - 1; level++)
+            for (int level = 0; level < Rungs.Length - 1; level++)
             {
                 for (int i = 0; i < 4; i++)
                 {
                     bool rising = (level + i) % 2 == 0;
-                    Vector3 a = PostPoint(corners[i], rising ? rungs[level] : rungs[level + 1]);
-                    Vector3 b = PostPoint(corners[(i + 1) % 4], rising ? rungs[level + 1] : rungs[level]);
+                    Vector3 a = PostPoint(Corners[i], rising ? Rungs[level] : Rungs[level + 1]);
+                    Vector3 b = PostPoint(Corners[(i + 1) % 4], rising ? Rungs[level + 1] : Rungs[level]);
                     // Set the brace slightly outside the post centre line so it reads in front of the drive shaft.
                     Vector3 faceOut = Vector3.Normalize(new Vector3((a + b).X / 2 - 0.5f, 0, (a + b).Z / 2 - 0.5f)) * 0.01f;
                     int plank = level * 4 + i;
@@ -154,6 +134,68 @@ namespace TimbermeshGen.Models
             mesh.Revolve(new Vector3(0.5f, PlatformTop, 0.5f), bearing, 8, _ => RevolveBand.Wrapped(Metal, PlainMetal, smooth: false),
                 MathF.PI / 8);
             return mesh;
+        }
+
+        private static void AddDeck(MeshBuilder mesh)
+        {
+            // Deck: five planks running along X.
+            const float deckMin = 0.08f, deckMax = 0.92f, gap = 0.01f;
+            float plankWidth = (deckMax - deckMin - 4 * gap) / 5;
+            for (int i = 0; i < 5; i++)
+            {
+                float z0 = deckMin + i * (plankWidth + gap);
+                int plank = i;
+                mesh.Box(Brown, new Vector3(deckMin, 0, z0), new Vector3(deckMax, DeckTop, z0 + plankWidth), _ => Plank8(plank * 3 + 1),
+                    skipBottom: true);
+            }
+        }
+
+        private static void AddHousing(MeshBuilder mesh, bool withLid)
+        {
+            // Gearbox housing, lid, and a metal band near the bottom.
+            mesh.Box(Brown, new Vector3(0.5f - HousingHalf, DeckTop, 0.5f - HousingHalf),
+                new Vector3(0.5f + HousingHalf, HousingTop, 0.5f + HousingHalf), f => LongPlank(f), skipBottom: true);
+            if (withLid)
+            {
+                mesh.Box(LightBrown, new Vector3(0.5f - LidHalf, HousingTop, 0.5f - LidHalf), new Vector3(0.5f + LidHalf, LidTop, 0.5f + LidHalf),
+                    f => Plank8(f + 2));
+            }
+            const float bandOut = HousingHalf + 0.012f;
+            mesh.Box(Metal, new Vector3(0.5f - bandOut, 0.14f, 0.5f - bandOut), new Vector3(0.5f + bandOut, 0.18f, 0.5f + bandOut),
+                _ => MetalSlice, skipBottom: true);
+
+            // Bearing collars where the axles leave the housing (octagonal metal rings).
+            Vector2[] collar = { new Vector2(0.12f, 0), new Vector2(0.17f, 0), new Vector2(0.17f, 0.03f), new Vector2(0.12f, 0.03f) };
+            foreach (Vector3 outward in new[] { Vector3.UnitX, -Vector3.UnitX, Vector3.UnitZ, -Vector3.UnitZ })
+            {
+                MeshBuilder ring = new MeshBuilder();
+                ring.Revolve(Vector3.Zero, collar, 8, _ => RevolveBand.Wrapped(Metal, PlainMetal, smooth: false), MathF.PI / 8);
+                mesh.Append(ring, AlignY(outward, AxleCentre + outward * HousingHalf));
+            }
+
+        }
+
+        /// <summary>Four tapered corner posts from the deck up to <paramref name="top"/>.</summary>
+        private static void AddPosts(MeshBuilder mesh, float top)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                int plank = i;
+                mesh.Beam(Brown, PostPoint(Corners[i], DeckTop), PostPoint(Corners[i], top), PostWidth, PostWidth, Vector3.UnitX,
+                    _ => LongPlank(plank));
+            }
+        }
+
+        /// <summary>One ring of rungs, on each face of the trestle at <see cref="Rungs"/>[level].</summary>
+        private static void AddRungs(MeshBuilder mesh, int level)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                Vector3 a = PostPoint(Corners[i], Rungs[level]);
+                Vector3 b = PostPoint(Corners[(i + 1) % 4], Rungs[level]);
+                int plank = level + i;
+                mesh.Beam(LightBrown, a, b, 0.05f, 0.05f, Vector3.UnitY, _ => Plank8(plank));
+            }
         }
 
         /// <summary>Pulley wheel, hub, straps and drive shaft, in the #Pulley node's frame (origin at the pulley centre).</summary>

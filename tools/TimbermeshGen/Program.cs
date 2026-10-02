@@ -10,7 +10,7 @@ using Timberborn.TimbermeshDTO;
 // Offline tool for the Cable Power Transfer mod's models. Reads with the game's own DTO (Timberborn.TimbermeshDTO + the game's
 // protobuf-net), so anything it writes is checked against exactly what the game will parse.
 //
-//   station <outDir>                         build the Power Transfer Station models (main + 4 stubs), verify them
+//   station <outDir>                         build the Power Transfer Station models (main, 4 stubs, construction stage), verify them
 //   info <file.timbermesh>                   nodes, per-material bounds, animation angles and spin axes
 //   dump <file.timbermesh> [maxVerts]        raw nodes and vertex properties
 //   obj <out.obj> <frame> <file>...          Blender-space OBJ of one or more models (Z up), animated nodes posed at frame
@@ -22,6 +22,8 @@ switch (args.FirstOrDefault())
 {
     case "station" when args.Length >= 2:
         WriteAndVerify(PowerTransferStationModel.Build(), Path.Combine(args[1], "PowerTransferStation.Folktails.Model.timbermesh"));
+        WriteAndVerify(PowerTransferStationModel.BuildConstructionStage(),
+            Path.Combine(args[1], "PowerTransferStation.Folktails.ConstructionStage0.Model.timbermesh"));
         foreach ((string face, Vector3 outward) in PowerTransferStationModel.StubFaces)
         {
             WriteAndVerify(PowerTransferStationModel.BuildStub(face, outward),

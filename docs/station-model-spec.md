@@ -4,8 +4,9 @@ This is the contract between the station model and the code/blueprint. Units are
 **Unity model space** (Y up, origin at the block corner) unless marked otherwise.
 
 ## Current model: generated
-`mod/Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.Model.timbermesh` and the four input-stub
-models `PowerTransferStation.Folktails.Stub{Right,Left,Up,Down}.Model.timbermesh` are **generated** by
+`mod/Buildings/Power/PowerTransferStation/PowerTransferStation.Folktails.Model.timbermesh`, the four input-stub
+models `PowerTransferStation.Folktails.Stub{Right,Left,Up,Down}.Model.timbermesh` and the construction stage
+`PowerTransferStation.Folktails.ConstructionStage0.Model.timbermesh` are **generated** by
 `tools/TimbermeshGen` (`Models/PowerTransferStationModel.cs`). It isn't a Blender export. The tool writes the
 Timbermesh format directly (see `docs/game-api-notes.md` §9) and reads every file back with the game's own
 DTO, so what it writes is what the game parses. All dimensions are constants at the top of the model class.
@@ -14,7 +15,7 @@ Regenerate after changing the model code:
 
 ```bash
 cd tools/TimbermeshGen
-dotnet run -- station ../../mod/Buildings/Power/PowerTransferStation      # writes all five model files
+dotnet run -- station ../../mod/Buildings/Power/PowerTransferStation      # writes all six model files
 ```
 
 Preview renders (Blender 5.x, textures loaded from the game's example `.blend`, nothing copied into the repo):
@@ -38,6 +39,7 @@ python tools/Icons/station_icon.py mod/Buildings/Power/PowerTransferStation/Powe
 | `PowerTransferStation.Folktails.Model` | (0, 0, 0) | Plank deck, gearbox housing and lid, metal band and bearing collars, four-post tapered trestle with rungs and braces, top platform | none |
 | `#Pulley` | (0.5, 2.85, 0.5) | Wooden wheel with a metal-lined groove, octagonal hub, four yellow straps on top, drive shaft down to the lid | one turn about +Y, angle decreasing |
 | `#Stub` in each `...Stub<Face>.Model` (Face = the base `Direction3D`: Right +X, Left −X, Up +Z, Down −Z) | (0.5, 0.5, 0.5) | One 0.22 square input stub, from inside the housing to its block face, with a metal band | one turn about its **outward** axis, which is "Normal" rotation in the game's transput convention; `StationAnimator` plays it backwards when the connected shaft needs "Reversed" |
+| `PowerTransferStation.Folktails.ConstructionStage0.Model` | (0, 0, 0) | Unfinished state, on top of the vanilla `ConstructionBase1x1`: deck, gearbox housing without its lid, the four posts up to y 1.4 and the first ring of rungs. Built from the same parts as the finished model | none |
 
 Every animation is `Default`, 96 frames at 24 fps (4 s per turn). The pulley rim (r 0.175) then moves at
 0.275 blocks/s, which matches the cable texture's 0.273 blocks/s. The spin direction matches the cable's
@@ -68,7 +70,5 @@ A Blender model exported with the Timbermesh plugin can replace the generated fi
 - Name the spinning part's animation anything; the game plays the model's first animation.
 
 ## Not done yet
-- `PowerTransferStation.Folktails.ConstructionStage0.Model`: the unfinished state still uses the vanilla
-  Clutch stage-0 model.
 - Iron Teeth: a second model with the same numbers (`Atlas.cs` would need the Iron Teeth material names).
   It's a blueprint-only addition.
