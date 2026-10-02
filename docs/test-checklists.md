@@ -389,3 +389,5 @@ ziplines only show such a cable in construction mode (`ZiplineCableRenderer` ina
    cable shows again. Selecting a **finished** station on its own does not show it.
 4. When the station is finished, the cable stays visible, in normal colour.
 5. Save and reload with the station still unbuilt: the cable is hidden until one of the step 3 actions.
+
+**Result (2026-10-03): passed.**
