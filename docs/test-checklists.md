@@ -391,3 +391,13 @@ ziplines only show such a cable in construction mode (`ZiplineCableRenderer` ina
 5. Save and reload with the station still unbuilt: the cable is hidden until one of the step 3 actions.
 
 **Result (2026-10-03): passed.**
+
+## Station cost doubled and load log fixed (2026-10-03)
+
+1. **Cost:** the station's tooltip and construction site ask for **16 Log, 12 Plank, 8 Gear** (was 8/6/4). The 600
+   science unlock is unchanged. Adding a cable is still free.
+2. **Load log:** load a save with linked stations, and let the game run (unpaused) for a moment. Player.log now has no
+   `power …` lines between `restored link` and `finished`. Instead, after the first game tick there is one
+   `power …` line per cable, then `after load: N cable link(s) between M station(s)`. Cables that carry power show
+   `cable connected True/True, same network True`. If a supply still shows 0 hp right after load on a network
+   with a running generator, report it: the generator may update its output a tick later than our log.
