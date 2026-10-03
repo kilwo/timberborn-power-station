@@ -158,7 +158,7 @@ Each phase ends with: a summary of what changed, any API assumptions made, and a
 - **Done when:** cables look right at various distances and height differences, and the animation reflects power state.
 
 ### Phase 6: Balance, polish, release
-- Settings, cost tuning, and edge-case testing: flooding, large networks, many stations, loading saves made without the mod, and removing the mod from a save.
+- Settings, cost tuning, and edge-case testing: flooding (decided 2026-10-03: no flooding, like vanilla shafts), large networks, many stations, loading saves made without the mod, and removing the mod from a save.
 - Prepare the Steam Workshop and mod.io description and thumbnail checklist.
 
 ## Coding conventions

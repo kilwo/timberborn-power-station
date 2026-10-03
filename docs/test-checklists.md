@@ -481,3 +481,5 @@ Look: if the grey lid and rungs don't suit Iron Teeth, the alternative accent is
   the Impermeable Power Shaft don't. Even when a building floods, that only zeroes its own output, input and battery
   (`MechanicalNode.Active` = `BlockableObject.IsUnblocked`). Graph connectivity ignores it, so flooding never cuts a
   vanilla power network.
+
+**Decision (2026-10-03): keep it like vanilla.** Flooding doesn't stop the station, the same as shafts and the Clutch.
