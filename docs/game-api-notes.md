@@ -446,3 +446,16 @@ measure and never committed):
 - Cable blocks are **not entities**: `PowerCableBlockService` creates them with `BlockObjectFactory.CreateAsPreview`
   (`TemplateInstantiator`, not `EntityService`) and rebuilds them from the links on every load. They're never saved,
   so removing the mod can't leave invisible blockers behind.
+
+## 13. In-game Steam Workshop uploader (checked 1.1.2.4, `Timberborn.SteamWorkshop*.dll`)
+
+- The mod manager's upload button opens `SteamWorkshopUploadPanel` for a mod folder. The description field is
+  pre-filled from `manifest.json`'s `Description` and can be edited. For an existing item, the "Update description",
+  "Update preview" and "Update tags" toggles decide what's overwritten.
+- Preview: `thumbnail.png`, `thumbnail.jpg` or `thumbnail.jpeg` in the mod folder (`SteamWorkshopModThumbnail`), otherwise
+  the game's default. The UI text says it must be under 1 MB and that 16:9 is preferred.
+- Tags (`SteamWorkshopModTags`): the mandatory "Mod" tag, then Compatibility ("Update 1.1"…), Type ("New content",
+  "Quality of life"…) and Content ("Buildings"…).
+- The only Steam calls are `CreateItem`, `StartItemUpdate`, `SetItemTitle/Description/Preview/Tags/Visibility/Content`
+  and `SubmitItemUpdate`. There's **no `AddDependency`**, so the Workshop "Required items" (Harmony) must be added on the
+  item page by hand.

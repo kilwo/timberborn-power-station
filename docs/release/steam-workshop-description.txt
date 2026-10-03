@@ -1,0 +1,49 @@
+[h1]Cable Power Transfer[/h1]
+
+Tired of laying a hundred power shafts? Build two [b]Power Transfer Stations[/b] and link them with a cable loop. Linked stations work like one continuous power shaft: both sides join a single mechanical power network.
+
+[h2]Features[/h2]
+[list]
+[*] New Power building: the [b]Power Transfer Station[/b]. It has a 1×1 footprint and is 3 blocks tall. Its base connects to shafts and powered buildings on all four sides, like a shaft junction.
+[*] Link stations with cable loops up to [b]30 blocks[/b] apart. Each station holds up to [b]3 cables[/b], so you can chain and branch power across the map.
+[*] Linked networks merge completely. Generators, batteries and consumers on either side share one network, exactly as if a shaft joined them. Removing a cable or demolishing a station splits them again.
+[*] Cables sag naturally and move while power flows. The pulley and the station's shaft stubs turn with the connected shafts.
+[*] Folktails and Iron Teeth versions.
+[/list]
+
+[h2]How to use[/h2]
+[olist]
+[*] Unlock the station for 600 science, then build it for 16 logs, 12 planks and 8 gears.
+[*] Select a station and click [b]Add connection[/b] in its panel.
+[*] Hover another station. The preview cable is green if the link is valid. If it isn't, it's red and shows the reason: too far, too steep, too many connections, line obstructed, or different districts. Click to connect. Esc cancels.
+[*] To remove a cable, click the ✕ on its button in the station panel.
+[/olist]
+You can link to a station that's still under construction. Its cable is shown while you're in construction mode, and it carries power once the station is built.
+
+[h2]Rules[/h2]
+Cables follow the same rules as ziplines:
+[list]
+[*] Up to 30 blocks long, and no steeper than 50°.
+[*] The straight line between the two pulleys must be clear. Each cable reserves the cells it passes through, so nothing can be built through it. Cables can share cells with other cables, but cables and ziplines can't cross.
+[*] Stations next to roads of two different districts can't be linked. A station with no road beside it can link to anything.
+[/list]
+Connecting a cable is free, and cables carry power without loss or a throughput limit. Like power shafts, stations keep working when flooded.
+
+[h2]Requirements[/h2]
+[list]
+[*] Timberborn 1.1 (1.1.2.4 or later).
+[*] [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3284904751]Harmony[/url] (required).
+[/list]
+
+[h2]Saves and compatibility[/h2]
+[list]
+[*] Works with existing saves.
+[*] Removing the mod is safe. When you load the save, the game shows a "Loading issues" dialog and deletes the stations. Everything else is unaffected, and cables leave nothing behind.
+[*] The mod uses one small Harmony patch on how mechanical buildings find their connected neighbours. Other mods that change that may conflict.
+[/list]
+
+[h2]Configuration[/h2]
+The cable limits are in [i]Configurations/CableConnectionService.blueprint.json[/i] in the mod folder: [i]MaxCableSpan[/i] (30), [i]MaxCablesPerStation[/i] (3, which is also the most a station can hold) and [i]MaxInclination[/i] (50). Mod updates replace this file, so make your changes again after an update.
+
+[h2]Languages[/h2]
+English.

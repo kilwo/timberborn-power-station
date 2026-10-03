@@ -1,6 +1,6 @@
 {
   "Name": "Cable Power Transfer",
-  "Version": "0.0.1",
+  "Version": "1.0",
   "Id": "Elum.CablePowerTransfer",
   "MinimumGameVersion": "1.1.2.4",
   "Description": "Power Transfer Stations linked by cable loops carry mechanical power across long distances without power shafts.",
