@@ -459,3 +459,10 @@ science, size, cable rules and behaviour are identical, as for vanilla faction v
 
 Look: if the grey lid and rungs don't suit Iron Teeth, the alternative accent is `BaseWood_Indigo` (one line in
 `tools/TimbermeshGen/Models/Faction.cs`).
+
+**Result (2026-10-03): passed, apart from step 5.** The user says it "looks good". Log from a new Iron Teeth game on Lakes:
+- No material, Timbermesh or `[CablePowerTransfer]` errors.
+- (109,116,2)↔(107,121,2) linked `True/True, same network True`.
+- (107,121,2)↔(107,126,2) was linked while (107,126,2) was unbuilt. When it finished, its `power` line was logged on
+  its own (`True/True`, 300 hp), which confirms the finish-time power log.
+- Not in the log: step 5. The game was saved, then closed without reloading.
