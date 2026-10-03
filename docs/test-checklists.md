@@ -483,3 +483,25 @@ Look: if the grey lid and rungs don't suit Iron Teeth, the alternative accent is
   vanilla power network.
 
 **Decision (2026-10-03): keep it like vanilla.** Flooding doesn't stop the station, the same as shafts and the Clutch.
+
+## Phase 6: saves without the mod, and removing the mod (2026-10-03)
+
+Predicted from the game code (`docs/game-api-notes.md` §12). Use a **copy** of a save that has linked stations.
+
+**A. Removing the mod from a save**
+1. Disable **Cable Power Transfer** in the mod manager (leave Harmony on) and load the save copy.
+2. The game may warn that the save used a missing mod; continue. A **"Loading issues"** dialog lists
+   `Object had unknown type and was deleted: PowerTransferStation.Folktails` (or `.IronTeeth`). Click
+   **Continue playing**.
+3. The stations and cables are gone. Shafts that ended at a station are just shafts. Nothing else is missing or broken.
+4. The cells where cables ran are free: you can build there (no invisible blockers are left).
+5. Save, then reload the same save (still without the mod): no loading-issues dialog this time.
+6. Re-enable the mod and load that save: there are no stations (they were deleted). Loading the **original** save with
+   the mod enabled still has everything.
+
+**B. Adding the mod to a save made without it**
+7. With the mod enabled, load a save that never had it. It loads normally, and the log shows
+   `after load: 0 cable link(s) between 0 station(s)`. The station is available in the Power tab (locked behind
+   science as usual).
+
+Report anything that differs, plus the Player.log.

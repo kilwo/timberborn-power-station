@@ -434,3 +434,15 @@ measure and never committed):
 - A blocked node only gets `Active == false`, which zeroes its actual output, input and battery charge (MechanicalNode
   `UpdateActiveState`). Graph membership and transput connections don't look at `Active`, so a flooded node still
   links its neighbours. Our station has none of these specs, so it behaves like a shaft or clutch.
+
+## 12. Saves with a missing mod (checked 1.1.2.4, `Timberborn.WorldPersistence.dll`)
+
+- `WorldEntitiesLoader.TryInstantiateEntity` looks up each saved entity's template with `TemplateNameMapper.GetTemplate`.
+  An unknown name throws `TemplateMappingException`, which is caught: the entity is **skipped**, and a loading issue
+  `LoadingIssue.PrefabNotFoundIssue` ("Object had unknown type and was deleted: {0}.") is added. The player sees a
+  "Loading issues" dialog ("This is likely caused by missing mods…") with a "Continue playing" button.
+- Our saved state lives only on station entities (`PowerTransferStation` component, keys `RopePartners`/`RopePartnerCount`),
+  so it's dropped with them. There are no saveable singletons.
+- Cable blocks are **not entities**: `PowerCableBlockService` creates them with `BlockObjectFactory.CreateAsPreview`
+  (`TemplateInstantiator`, not `EntityService`) and rebuilds them from the links on every load. They're never saved,
+  so removing the mod can't leave invisible blockers behind.
