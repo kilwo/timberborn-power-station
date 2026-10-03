@@ -466,3 +466,18 @@ Look: if the grey lid and rungs don't suit Iron Teeth, the alternative accent is
 - (107,121,2)↔(107,126,2) was linked while (107,126,2) was unbuilt. When it finished, its `power` line was logged on
   its own (`True/True`, 300 hp), which confirms the finish-time power log.
 - Not in the log: step 5. The game was saved, then closed without reloading.
+
+## Phase 6 edge cases: big network, Iron Teeth reload, flooding (2026-10-03)
+
+**Result (Iron Teeth save, Player.log 10:34–10:40):**
+- **Iron Teeth save/load (step 5 above): passed.** Links restored after each of 3 reloads, with no warnings.
+- **Many stations: passed.** There were 18 stations and 17 cables, from height 2 to 6 with spans 5.0–11.4. Every cable
+  showed `True/True, same network True` on one network. After reload all 17 were restored, with no errors.
+- **Consumers through cables: passed.** The whole chain logged `supply 300 hp / demand 500 hp`, which is real demand
+  carried over the cables (Phase 4 step 8, now with a consumer).
+- **Flooding:** a flooded station keeps passing power. **This matches vanilla.** Only buildings whose blueprint has
+  `WaterObjectSpec` + `FloodableBuildingSpec` + `BlockableFloodableObjectSpec` flood. Among power buildings that is
+  only the generators (water wheels, wind turbines, geothermal engine). Shafts, the Clutch, the Gravity Battery and
+  the Impermeable Power Shaft don't. Even when a building floods, that only zeroes its own output, input and battery
+  (`MechanicalNode.Active` = `BlockableObject.IsUnblocked`). Graph connectivity ignores it, so flooding never cuts a
+  vanilla power network.

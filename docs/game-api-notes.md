@@ -422,3 +422,15 @@ measure and never committed):
   hierarchy. `ModularShaftAnimator` drives all animators with `Enabled = ActiveAndPowered && PowerEfficiency > 0` and
   `Speed = PowerEfficiency × NonlinearAnimationManager.SpeedMultiplier` (TimeSystem), and `StationAnimator` copies
   this. `MechanicalNode.Transputs` is rebuilt on every finished/unfinished change.
+
+## 11. Flooding (checked 1.1.2.4, `Timberborn.WaterObjects.dll`)
+
+- Opt-in per blueprint: `WaterObjectSpec { WaterCoordinates }` (`WaterObject`: water height above the base cell),
+  `FloodableBuildingSpec` (`Timberborn.WaterBuildings`), and `BlockableFloodableObjectSpec` (`BlockableFloodableObject`,
+  which calls `BlockableObject.Block/Unblock` on `FloodableObject.Flooded/Unflooded`).
+- Vanilla power buildings with it: only generators (WaterWheel, LargeWaterWheel, CompactWaterWheel, WindTurbine,
+  LargeWindTurbine, GeothermalEngine). PowerShaft, VerticalPowerShaft, Clutch, GravityBattery and
+  ImpermeablePowerShaft don't have it.
+- A blocked node only gets `Active == false`, which zeroes its actual output, input and battery charge (MechanicalNode
+  `UpdateActiveState`). Graph membership and transput connections don't look at `Active`, so a flooded node still
+  links its neighbours. Our station has none of these specs, so it behaves like a shaft or clutch.
