@@ -247,7 +247,7 @@ old test cables still work but there's no key to list them any more.
 Report: pass/fail for each step, screenshots of the panel, tool preview and cables (steps 1, 3, 4, 6),
 and Player.log in the project folder.
 
-**Result (2026-10-03): power steps passed** (user in-game check plus Player.log):
+**Result (2026-10-03): passed** (user in-game check plus Player.log):
 - Steps 1–7: the panel, tool and preview work (visual checks passed).
 - Step 9: removing (83,58,5)↔(89,62,5) gave `linked False … same network False`. (89,62,5)'s side dropped from 50 hp
   to 0 hp and (83,58,5) kept 50 hp. Relinking restored `True/True, same network True`. It was repeated on
@@ -255,9 +255,14 @@ and Player.log in the project folder.
 - Step 10: demolishing the middle station (89,62,5) of (85,64,5)–(89,62,5)–(83,58,5) logged both `unlinked` lines,
   and in-game the far side lost power. After a reload nothing about (89,62,5) was restored and there were no
   warnings.
+- Step 8: a gravity battery on the far side charged while the cable was connected and stopped when it was removed. The
+  log's `demand 0 hp` is expected: `MechanicalGraph.PowerDemand` only sums consumers' `PowerInput`, and batteries
+  charge from `PowerSurplus` (`BatteryService`), so charging never shows as demand.
+- Steps 11–13: passed. Building is refused in a cable's cells, the cells are freed on unlink, and cables and ziplines
+  can't cross.
 - Steps 14 and 15: save/load restores cables, and cables to unbuilt stations wait (`3 waiting for a station to be built`).
-- Not yet shown: step 8 `demand > 0 hp`. Every line still has demand 0, because no consumer was drawing power at the
-  time.
+
+**Phase 4 is done.**
 
 *Phase 4 bug (2026-09-25): hovering a target whose cable crossed a zipline threw a NullReferenceException in
 `Highlighter.HighlightPrimary`, called from `CablePreviewRenderer.Draw`. The cause was zipline cable blocks
