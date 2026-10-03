@@ -5,3 +5,5 @@ obj/
 decompiled/
 # Logs copied in for debugging
 Player*.log
+# Screenshots dropped in the project root for debugging
+/*.png
