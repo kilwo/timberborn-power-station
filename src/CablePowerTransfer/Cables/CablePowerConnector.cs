@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using CablePowerTransfer.Stations;
 using Timberborn.SingletonSystem;
-using Timberborn.TickSystem;
 
 namespace CablePowerTransfer.Cables
 {
@@ -9,14 +8,17 @@ namespace CablePowerTransfer.Cables
     /// Turns cable link changes into mechanical graph rebuilds. The actual connection is made by the game's
     /// MechanicalGraphManager via the TransputMap.GetFacingTransput patch; this only asks both ends to re-query it.
     /// </summary>
-    public class CablePowerConnector : ILoadableSingleton, ITickableSingleton
+    public class CablePowerConnector : ILoadableSingleton, IUpdatableSingleton
     {
         private readonly CableConnectionService _cableConnectionService;
         private readonly PowerTransferStationRegistry _registry;
-        // Links restored on load are logged on the first tick instead of as they're restored: restoring runs in
+        // Links restored on load are logged on the first frame instead of as they're restored: restoring runs in
         // PostInitializeEntity, before the stations' nodes join their graphs, so the state would always read
-        // "cable connected False/False" there. By the first tick the graphs are built and supply/demand updated.
+        // "cable connected False/False" there. Entities are all loaded before the first UpdateSingleton, even while
+        // the game is paused (a game tick may never come).
         private bool _loadLogged;
+        // Stations that finished since the last frame; their cables are logged once their nodes have joined a graph.
+        private readonly List<PowerTransferStation> _finishedStations = new List<PowerTransferStation>();
 
         public CablePowerConnector(CableConnectionService cableConnectionService, PowerTransferStationRegistry registry)
         {
@@ -27,27 +29,62 @@ namespace CablePowerTransfer.Cables
         public void Load()
         {
             _cableConnectionService.LinksChanged += OnLinksChanged;
+            _registry.StationFinished += OnStationFinished;
         }
 
-        public void Tick()
+        public void UpdateSingleton()
         {
-            if (_loadLogged)
+            if (!_loadLogged)
             {
+                _loadLogged = true;
+                _finishedStations.Clear();
+                LogLoadedLinks();
                 return;
             }
-            _loadLogged = true;
-            var logged = new HashSet<PowerCableKey>();
-            foreach (PowerTransferStation station in _registry.Stations)
+            foreach (PowerTransferStation station in _finishedStations)
             {
-                foreach (PowerTransferStation partner in station.CablePartners)
+                if (station && !station.IsBeingDeleted)
                 {
-                    if (logged.Add(new PowerCableKey(station, partner)))
+                    foreach (PowerTransferStation partner in station.CablePartners)
                     {
                         LogPowerState(station, partner);
                     }
                 }
             }
-            ModLog.Info($"after load: {logged.Count} cable link(s) between {_registry.Stations.Count} station(s)");
+            _finishedStations.Clear();
+        }
+
+        private void LogLoadedLinks()
+        {
+            var links = new HashSet<PowerCableKey>();
+            int waiting = 0;
+            foreach (PowerTransferStation station in _registry.Stations)
+            {
+                foreach (PowerTransferStation partner in station.CablePartners)
+                {
+                    if (links.Add(new PowerCableKey(station, partner)))
+                    {
+                        if (station.IsFinished && partner.IsFinished)
+                        {
+                            LogPowerState(station, partner);
+                        }
+                        else
+                        {
+                            waiting++;
+                        }
+                    }
+                }
+            }
+            ModLog.Info($"after load: {links.Count} cable link(s) between {_registry.Stations.Count} station(s), " +
+                        $"{waiting} waiting for a station to be built");
+        }
+
+        private void OnStationFinished(PowerTransferStation station)
+        {
+            if (_loadLogged && station.CablePartners.Count > 0)
+            {
+                _finishedStations.Add(station);
+            }
         }
 
         private void OnLinksChanged(PowerTransferStation station, PowerTransferStation other)

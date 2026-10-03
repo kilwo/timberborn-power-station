@@ -396,11 +396,18 @@ ziplines only show such a cable in construction mode (`ZiplineCableRenderer` ina
 
 1. **Cost:** the station's tooltip and construction site ask for **16 Log, 12 Plank, 8 Gear** (was 8/6/4). The 600
    science unlock is unchanged. Adding a cable is still free.
-2. **Load log:** load a save with linked stations, and let the game run (unpaused) for a moment. Player.log now has no
-   `power …` lines between `restored link` and `finished`. Instead, after the first game tick there is one
-   `power …` line per cable, then `after load: N cable link(s) between M station(s)`. Cables that carry power show
-   `cable connected True/True, same network True`. If a supply still shows 0 hp right after load on a network
-   with a running generator, report it: the generator may update its output a tick later than our log.
+2. **Load log:** load a save with linked stations. Player.log now has no
+   `power …` lines between `restored link` and `finished`. Instead, as soon as the game appears there is one
+   `power …` line per cable whose stations are both built, then
+   `after load: N cable link(s) between M station(s), K waiting for a station to be built`. Cables that carry power
+   show `cable connected True/True, same network True`.
+
+*First run (2026-10-03): every cable in the save touched an unbuilt station, so there were no `power` lines, and the
+summary didn't say why. In the session before, the game never ticked (it stayed paused), so the log keyed on the
+first tick never ran and linking with the tool logged no `power` lines either. Now the log runs on the first frame
+(paused or not), the summary counts cables waiting for construction, and a station finishing logs its cables.*
+
+3. **Finish logs power:** a cable to an unbuilt station logs its `power …` line once that station is finished.
 
 ## Station construction model (2026-10-03)
 
@@ -413,3 +420,5 @@ with the first ring of rungs.
 2. Click the half-built posts: the construction site is selected (its collider now covers them).
 3. When construction finishes, it switches to the full model.
 4. Log: no `Material ... not found` or Timbermesh errors.
+
+**Result (2026-10-03): visual checks passed** (cost, construction model, earlier visual lists).
