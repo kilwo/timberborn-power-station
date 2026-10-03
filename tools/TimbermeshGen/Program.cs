@@ -10,7 +10,7 @@ using Timberborn.TimbermeshDTO;
 // Offline tool for the Cable Power Transfer mod's models. Reads with the game's own DTO (Timberborn.TimbermeshDTO + the game's
 // protobuf-net), so anything it writes is checked against exactly what the game will parse.
 //
-//   station <outDir>                         build the Power Transfer Station models (main, 4 stubs, construction stage), verify them
+//   station <outDir>                         build the Power Transfer Station models (main, 4 stubs, construction stage) per faction, verify
 //   info <file.timbermesh>                   nodes, per-material bounds, animation angles and spin axes
 //   dump <file.timbermesh> [maxVerts]        raw nodes and vertex properties
 //   obj <out.obj> <frame> <file>...          Blender-space OBJ of one or more models (Z up), animated nodes posed at frame
@@ -21,13 +21,17 @@ CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 switch (args.FirstOrDefault())
 {
     case "station" when args.Length >= 2:
-        WriteAndVerify(PowerTransferStationModel.Build(), Path.Combine(args[1], "PowerTransferStation.Folktails.Model.timbermesh"));
-        WriteAndVerify(PowerTransferStationModel.BuildConstructionStage(),
-            Path.Combine(args[1], "PowerTransferStation.Folktails.ConstructionStage0.Model.timbermesh"));
-        foreach ((string face, Vector3 outward) in PowerTransferStationModel.StubFaces)
+        foreach (string faction in Faction.All)
         {
-            WriteAndVerify(PowerTransferStationModel.BuildStub(face, outward),
-                Path.Combine(args[1], $"PowerTransferStation.Folktails.Stub{face}.Model.timbermesh"));
+            WriteAndVerify(Faction.Convert(PowerTransferStationModel.Build(), faction),
+                Path.Combine(args[1], $"PowerTransferStation.{faction}.Model.timbermesh"));
+            WriteAndVerify(Faction.Convert(PowerTransferStationModel.BuildConstructionStage(), faction),
+                Path.Combine(args[1], $"PowerTransferStation.{faction}.ConstructionStage0.Model.timbermesh"));
+            foreach ((string face, Vector3 outward) in PowerTransferStationModel.StubFaces)
+            {
+                WriteAndVerify(Faction.Convert(PowerTransferStationModel.BuildStub(face, outward), faction),
+                    Path.Combine(args[1], $"PowerTransferStation.{faction}.Stub{face}.Model.timbermesh"));
+            }
         }
         break;
     case "info" when args.Length >= 2:

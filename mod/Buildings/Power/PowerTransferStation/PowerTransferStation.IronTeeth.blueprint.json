@@ -1,0 +1,281 @@
+{
+  "BuildingSpec": {
+    "SelectionSoundName": "Shaft",
+    "LoopingSoundName": "",
+    "BuildingCost": [
+      {
+        "Id": "Log",
+        "Amount": 16
+      },
+      {
+        "Id": "Plank",
+        "Amount": 12
+      },
+      {
+        "Id": "Gear",
+        "Amount": 8
+      }
+    ],
+    "ScienceCost": 600,
+    "PlaceFinished": false,
+    "FinishableWithBeaversOnSite": false,
+    "DrawRangeBoundsOnIt": false
+  },
+  "BuildingModelSpec": {
+    "FinishedModelName": "#Finished",
+    "UnfinishedModelName": "#Unfinished",
+    "FinishedUncoveredModelName": "",
+    "UndergroundModelName": "",
+    "ConstructionModeModel": "Finished",
+    "UndergroundModelDepth": 0
+  },
+  "TemplateSpec": {
+    "TemplateName": "PowerTransferStation.IronTeeth",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "BlockObjectSpec": {
+    "Size": {
+      "X": 1,
+      "Y": 1,
+      "Z": 3
+    },
+    "Blocks": [
+      {
+        "MatterBelow": "GroundOrStackable",
+        "Occupations": "Bottom, Top, Corners, Path, Middle",
+        "Stackable": "None",
+        "OccupyAllBelow": false,
+        "Underground": false
+      },
+      {
+        "MatterBelow": "Any",
+        "Occupations": "All",
+        "Stackable": "None",
+        "OccupyAllBelow": false,
+        "Underground": false
+      },
+      {
+        "MatterBelow": "Any",
+        "Occupations": "All",
+        "Stackable": "None",
+        "OccupyAllBelow": false,
+        "Underground": false
+      }
+    ],
+    "Entrance": {
+      "HasEntrance": false,
+      "Coordinates": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
+    },
+    "BaseZ": 0,
+    "Overridable": false,
+    "Flippable": false
+  },
+  "MechanicalNodeSpec": {
+    "PowerOutput": 0,
+    "PowerInput": 0,
+    "IsShaft": false
+  },
+  "TransputProviderSpec": {
+    "Transputs": [
+      {
+        "Coordinates": {
+          "X": 0,
+          "Y": 0,
+          "Z": 0
+        },
+        "Directions": "Down, Left, Up, Right",
+        "ReverseRotation": false
+      },
+      {
+        "Coordinates": {
+          "X": 0,
+          "Y": 0,
+          "Z": 2
+        },
+        "Directions": "Bottom",
+        "ReverseRotation": false
+      },
+      {
+        "Coordinates": {
+          "X": 0,
+          "Y": 0,
+          "Z": 2
+        },
+        "Directions": "Bottom",
+        "ReverseRotation": false
+      },
+      {
+        "Coordinates": {
+          "X": 0,
+          "Y": 0,
+          "Z": 2
+        },
+        "Directions": "Bottom",
+        "ReverseRotation": false
+      }
+    ],
+    "IgnoreRotation": true
+  },
+  "PlaceableBlockObjectSpec": {
+    "ToolGroupId": "Power",
+    "ToolOrder": 35,
+    "ToolShape": "Square",
+    "Layout": "Single",
+    "CustomPivot": {
+      "HasCustomPivot": false,
+      "Coordinates": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      }
+    },
+    "CanBeAttachedToTerrainSide": false,
+    "DevModeTool": false
+  },
+  "LabeledEntitySpec": {
+    "DisplayNameLocKey": "Building.PowerTransferStation.DisplayName",
+    "DescriptionLocKey": "Building.PowerTransferStation.Description",
+    "FlavorDescriptionLocKey": "Building.PowerTransferStation.FlavorDescription",
+    "Icon": "Buildings/Power/PowerTransferStation/PowerTransferStationIcon"
+  },
+  "ConstructionSiteProgressVisualizerSpec": {
+    "ProgressThresholds": [
+      0.0
+    ]
+  },
+  "PowerTransferStationSpec": {
+    "CableAnchorPoint": {
+      "X": 0.5,
+      "Y": 2.85,
+      "Z": 0.5
+    },
+    "CableSlotCoordinates": {
+      "X": 0,
+      "Y": 0,
+      "Z": 2
+    },
+    "PulleyRadius": 0.175
+  },
+  "StationAnimatorSpec": {},
+  "Children": {
+    "#Finished": {
+      "Children": {
+        "Model": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.IronTeeth.Model"
+          }
+        },
+        "StubRight": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.IronTeeth.StubRight.Model"
+          }
+        },
+        "StubLeft": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.IronTeeth.StubLeft.Model"
+          }
+        },
+        "StubUp": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.IronTeeth.StubUp.Model"
+          }
+        },
+        "StubDown": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.IronTeeth.StubDown.Model"
+          }
+        }
+      },
+      "CollidersSpec": {
+        "BoxColliders": [
+          {
+            "Center": {
+              "X": 0.5,
+              "Y": 0.4,
+              "Z": 0.5
+            },
+            "Size": {
+              "X": 1.0,
+              "Y": 0.8,
+              "Z": 1.0
+            }
+          },
+          {
+            "Center": {
+              "X": 0.5,
+              "Y": 1.75,
+              "Z": 0.5
+            },
+            "Size": {
+              "X": 0.5,
+              "Y": 1.9,
+              "Z": 0.5
+            }
+          },
+          {
+            "Center": {
+              "X": 0.5,
+              "Y": 2.85,
+              "Z": 0.5
+            },
+            "Size": {
+              "X": 0.43,
+              "Y": 0.2,
+              "Z": 0.43
+            }
+          }
+        ],
+        "SphereColliders": [],
+        "CapsuleColliders": []
+      }
+    },
+    "#Unfinished": {
+      "Children": {
+        "ConstructionBase1x1#nested": {
+          "BlueprintPath": "ConstructionBases/ConstructionBase1x1/ConstructionBase1x1.blueprint"
+        },
+        "ConstructionStage0": {
+          "TimbermeshSpec": {
+            "Model": "Buildings/Power/PowerTransferStation/PowerTransferStation.IronTeeth.ConstructionStage0.Model"
+          },
+          "CollidersSpec": {
+            "BoxColliders": [
+              {
+                "Center": {
+                  "X": 0.5,
+                  "Y": 0.05,
+                  "Z": 0.5
+                },
+                "Size": {
+                  "X": 1.0,
+                  "Y": 0.1,
+                  "Z": 1.0
+                }
+              },
+              {
+                "Center": {
+                  "X": 0.5,
+                  "Y": 0.75,
+                  "Z": 0.5
+                },
+                "Size": {
+                  "X": 0.6,
+                  "Y": 1.32,
+                  "Z": 0.6
+                }
+              }
+            ],
+            "SphereColliders": [],
+            "CapsuleColliders": []
+          }
+        }
+      }
+    }
+  }
+}

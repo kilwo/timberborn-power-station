@@ -15,7 +15,7 @@ Regenerate after changing the model code:
 
 ```bash
 cd tools/TimbermeshGen
-dotnet run -- station ../../mod/Buildings/Power/PowerTransferStation      # writes all six model files
+dotnet run -- station ../../mod/Buildings/Power/PowerTransferStation      # writes all six model files per faction
 ```
 
 Preview renders (Blender 5.x, textures loaded from the game's example `.blend`, nothing copied into the repo):
@@ -50,7 +50,18 @@ station is powered. It turns each stub the same way as the shaft or generator on
 `docs/game-api-notes.md` §10).
 
 Materials: `BaseWood_Brown/LightBrown/White.Folktails`, `BaseMetal.Folktails`, `PaintedMetal.Folktails`, with
-all vertex colours white. The model is about 2,000 vertices and 21 KB.
+all vertex colours white.
+
+**Iron Teeth** models (`PowerTransferStation.IronTeeth.*`) are the same geometry and UVs with Iron Teeth materials,
+converted by `Models/Faction.cs`, as vanilla does for its shaft parts:
+
+| Folktails | Iron Teeth | Source |
+|---|---|---|
+| `BaseWood_Brown` | `BaseWood_DarkBrown` | vanilla shaft parts |
+| `BaseWood_White` (stubs, drive shaft) | `BaseWood_Grey` | vanilla `ImpermeablePowerShaft` |
+| `BaseWood_LightBrown` (lid, rungs, platform) | `BaseWood_Grey` | our choice: no vanilla counterpart |
+| `BaseMetal` | `BaseMetal` | vanilla |
+| `PaintedMetal` (pulley straps) | `PaintedMetal` | same stripe layout, blue instead of yellow | The model is about 2,000 vertices and 21 KB.
 
 ## Fixed numbers (code and blueprint depend on these)
 - **Footprint** 1 × 1, 3 blocks tall. Everything stays inside X/Z 0–1, Y 0–3.
@@ -70,5 +81,3 @@ A Blender model exported with the Timbermesh plugin can replace the generated fi
 - Name the spinning part's animation anything; the game plays the model's first animation.
 
 ## Not done yet
-- Iron Teeth: a second model with the same numbers (`Atlas.cs` would need the Iron Teeth material names).
-  It's a blueprint-only addition.

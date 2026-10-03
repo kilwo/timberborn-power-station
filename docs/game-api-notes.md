@@ -371,7 +371,10 @@ Checked against vanilla models, the front face is where `cross(b - a, c - a)` po
 name and loaded from `MaterialCollectionSpec` blueprints (`Blueprints/MaterialCollections/*`, Common plus the
 faction collection). Folktails building materials are UberAtlas textures: `BaseWood_Brown/LightBrown/White/Yellow.Folktails`,
 `BaseMetal.Folktails`, `PaintedMetal.Folktails` (yellow/black stripes), `IrregularPlanks_*`, `Details`,
-`WindowsAtlas`, and so on. An unknown name **throws**. Vertex colour multiplies albedo (as in the
+`WindowsAtlas`, and so on. Iron Teeth has `BaseWood_DarkBrown/Grey/Indigo.IronTeeth`, `BaseMetal.IronTeeth`,
+`PaintedMetal.IronTeeth` and others (`MaterialCollection.IronTeeth`), using the same atlas layout: vanilla faction
+variants (e.g. `ShaftSupport.Folktails`/`.IronTeeth`) have identical vertices and UVs, with only the materials swapped.
+An unknown name **throws**. Vertex colour multiplies albedo (as in the
 `EnvironmentURP` graph), so vanilla uses 1 for plain parts. The atlas layouts are in the example textures
 packed in `StreamingAssets/Modding/TimberbornExampleModels.blend`; see `tools/TimbermeshGen/Models/Atlas.cs`.
 

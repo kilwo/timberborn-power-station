@@ -439,3 +439,23 @@ with the first ring of rungs.
 4. Log: no `Material ... not found` or Timbermesh errors.
 
 **Result (2026-10-03): visual checks passed** (cost, construction model, earlier visual lists).
+
+## Iron Teeth station (2026-10-03)
+
+The Iron Teeth station is the Folktails one with Iron Teeth materials: dark brown wood instead of brown, grey for the lid,
+rungs, platform, stubs and drive shaft, and **blue** pulley straps (Iron Teeth's painted metal) instead of yellow. Cost,
+science, size, cable rules and behaviour are identical, as for vanilla faction variants.
+
+1. Start or load an **Iron Teeth** game. The Power tab has the Power Transfer Station (same icon). It's locked behind
+   600 science and costs 16 Log, 12 Plank, 8 Gear.
+2. The construction site shows the half-built trestle in Iron Teeth colours, and the finished station the full model.
+   Nothing renders pink or missing (that would mean a wrong material name).
+3. Shafts on all four sides line up with the stubs, and the stubs turn the same way as their shafts.
+4. Link two stations. The cable sits in the pulley groove, carries power (a battery or consumer on the far side runs),
+   and the pulley and blue straps turn while powered.
+5. Save and reload: cables and power are restored.
+6. A **Folktails** game still has its own (brown and yellow) station, unchanged.
+7. Log: no `Material ... not found`, Timbermesh or `[CablePowerTransfer]` errors.
+
+Look: if the grey lid and rungs don't suit Iron Teeth, the alternative accent is `BaseWood_Indigo` (one line in
+`tools/TimbermeshGen/Models/Faction.cs`).
