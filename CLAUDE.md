@@ -27,7 +27,7 @@ A Timberborn (1.0+) mod that replaces long runs of power shafts with **Power Tra
 - **Modding repo:** `https://github.com/mechanistry/timberborn-modding` is cloned alongside at `../timberborn-modding`. It's used only as a reference for the manifest, blueprint and Timbermesh formats. The example mods ship `.timbermesh` files directly in `Data/`, so models don't need Unity. The repo pins Unity 6000.5.11f1; only install that if we ever need an asset bundle.
 - **Harmony:** not shipped with the game. Depend on the Steam Workshop "Harmony" mod (manifest `Id: "Harmony"`, v2.4.1, workshop item 3284904751) through `RequiredMods`. Reference its `0Harmony.dll` at compile time with `Private="false"`, and never bundle it.
 - **3D models:** Blender plus the Timbermesh plugin. I'll handle modelling; you write the specs and code that reference the models.
-- **Git:** a local repo in this folder with no remote. Make small commits, one per logical step.
+- **Git:** remote `origin` is `https://github.com/kilwo/timberborn-power-station` (GPL-3.0). Work on `main`, which tracks `origin/main`. Make small commits, one per logical step, and push only when I ask.
 
 ### Decompiling the game
 
