@@ -505,3 +505,8 @@ Predicted from the game code (`docs/game-api-notes.md` §12). Use a **copy** of 
    science as usual).
 
 Report anything that differs, plus the Player.log.
+
+**Result A1–A3 (2026-10-03): passed, as predicted.** The Iron Teeth save (18 stations) was loaded with the mod disabled
+and Harmony on. The dialog showed `Object had unknown type and was deleted: PowerTransferStation.IronTeeth. (18)`, and
+Player.log had 18 matching `Failed to instantiate … No template found` lines and no other errors. The game then saved
+without the stations. Still to do: A4 (cable cells buildable), A5 (reload shows no dialog), A6 and B7.
