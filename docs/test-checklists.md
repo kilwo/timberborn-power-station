@@ -510,3 +510,13 @@ Report anything that differs, plus the Player.log.
 and Harmony on. The dialog showed `Object had unknown type and was deleted: PowerTransferStation.IronTeeth. (18)`, and
 Player.log had 18 matching `Failed to instantiate … No template found` lines and no other errors. The game then saved
 without the stations. Still to do: A4 (cable cells buildable), A5 (reload shows no dialog), A6 and B7.
+
+**Result A4–B7 (2026-10-03): passed** (the user: "everything worked as expected"). Logs from 10:47 to 10:51:
+- A5: the post-removal save loaded twice without the mod, with no `Failed to instantiate` lines and no dialog.
+- A6: with the mod re-enabled, the post-removal save loads with `0 cable link(s) between 0 station(s)`. The deleted
+  stations stay deleted.
+- B7: an older colony save (Flingleham, Day 18) that never had the mod loads normally, with 0 stations.
+- Real colony: 4 stations joined two separate networks (495/450 hp and 919/1260 hp supply/demand) into one at
+  1439/1710 hp. Unlinking split them back to 495/450 and 919/1260. No errors in either log.
+
+**Phase 6 edge cases are done.**
